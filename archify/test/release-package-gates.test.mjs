@@ -604,7 +604,8 @@ exec "$ARCHIFY_REAL_NODE" "$@"
     const safeOutput = path.join(safeParent, 'safe.zip');
     const safe = spawnBuildZip(safeOutput, { cwd: fixture, env });
     assert.equal(safe.status, 1, `${safe.stdout}\n${safe.stderr}`);
-    assert.match(safe.stderr, /canonical archify[.]zip builds require Node 22 \(current: 24[.]0[.]0\)/);
+    assert.match(safe.stderr, /canonical archify[.]zip builds require Node 22 with bundled zlib /);
+    assert.match(safe.stderr, /\(current: Node 24[.]0[.]0, zlib [^)]+\)/);
     assert.equal(fs.existsSync(safeOutput), false);
     assert.equal(fs.existsSync(safeParent), false, 'path-only validation must not create output parents');
     assert.deepEqual(fs.readdirSync(fixture).sort(), ['bin']);
