@@ -92,6 +92,10 @@ transition between two `main` states without a `variant` renders as the
 emphasized primary path. Showcase labels are ranked beside their line, then on
 it, then outward past neighbouring parallels.
 
+Explicit `fromSide` / `toSide` values remain authoritative. If an automatic
+transition pins either side, the scene uses the shared side-aware obstacle
+planner, retaining the v2 state grid and shared port spreading.
+
 ## Layout budget (v1)
 
 | Band | Lane id | Top y | Column centers | Default state |

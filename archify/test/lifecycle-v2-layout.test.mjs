@@ -181,6 +181,48 @@ test('v2 grid routes are orthogonal and reciprocal pairs run as parallel lines',
   assert.notEqual(routes.drop[0][0], routes.rejoin[0][0]);
 });
 
+for (const [name, lane, sides] of [
+  ['same-row-bottom', 'main', { fromSide: 'bottom', toSide: 'bottom' }],
+  ['cross-row-right', 'wait', { fromSide: 'right', toSide: 'right' }],
+  ['source-only', 'main', { fromSide: 'bottom' }],
+  ['target-only', 'wait', { toSide: 'left' }],
+]) {
+  test(`v2 automatic routes honor authored sides: ${name}`, () => {
+    const doc = v2SessionDocument({ doc: {
+      states: [
+        { id: 'a', type: 'active', label: 'A', lane: 'main', col: 0 },
+        { id: 'b', type: 'success', label: 'B', lane, col: 1 },
+        { id: 'c', type: 'waiting', label: 'C', lane: 'wait', col: 0 },
+      ],
+      transitions: [
+        { id: 'pinned', from: 'a', to: 'b', ...sides },
+        { from: 'a', to: 'c' },
+      ],
+    } });
+    const result = validate(name, doc);
+    assert.equal(result.code, 0, result.stdout || result.stderr);
+    const rendered = render(name, doc);
+    assert.equal(rendered.code, 0, rendered.stderr);
+    const svg = svgOf(rendered.output);
+    const rects = stateRects(svg);
+    const points = svg.match(/data-edge-id="pinned"[^>]*data-composition-points="([^"]+)"/)[1]
+      .split(';').map(point => point.split(',').map(Number));
+    for (const [field, node, point, next] of [
+      ['fromSide', rects.a, points[0], points[1]],
+      ['toSide', rects.b, points.at(-1), points.at(-2)],
+    ]) {
+      const side = sides[field];
+      if (!side) continue;
+      const vertical = side === 'top' || side === 'bottom';
+      const axis = vertical ? 1 : 0;
+      const positive = side === 'bottom' || side === 'right';
+      assert.equal(point[axis], vertical ? node.y + (positive ? node.height : 0) : node.x + (positive ? node.width : 0));
+      assert.equal(point[1 - axis], next[1 - axis], `${field}: perpendicular segment`);
+      assert.ok(positive ? next[axis] > point[axis] : next[axis] < point[axis], `${field}: outward segment`);
+    }
+  });
+}
+
 test('v2 start states get an initial marker and final states a double border', () => {
   const doc = v2SessionDocument({ name: 'session-markers' });
   doc.states = doc.states.map((s) => (s.lane === 'main' ? { ...s, col: s.col + 1 } : s));

@@ -72,6 +72,13 @@ const stateTextFit = lifecycle.schema_version === 2 ? {
 // is shared between versions.
 const isV2 = lifecycle.schema_version === 2;
 const authoredViewBox = lifecycle.meta?.viewBox;
+// The grid planner chooses facing sides. Once any automatic edge pins a
+// side, route that scene with the shared side-aware planner so pinned and
+// unpinned edges still share port spreading and obstacle reservations.
+const useGridRouter = isV2 && !asArray(lifecycle.transitions).some(transition => (
+  plannerRouted(transition)
+  && [transition.fromSide, transition.toSide].some(side => side && side !== 'auto')
+));
 
 const layout = {
   phaseY: 126,
@@ -243,16 +250,16 @@ const v2RowOf = (state) => (v2Rows.includes(state.lane) ? v2Rows.indexOf(state.l
 if (isV2) {
   // Route once to learn how many horizontal tracks each row gap carries,
   // then open every gap to fit them before the final routing pass.
-  const probe = createLifecycleGridRouter(states, asArray(lifecycle.transitions).filter(plannerRouted), {
+  const probe = useGridRouter ? createLifecycleGridRouter(states, asArray(lifecycle.transitions).filter(plannerRouted), {
     rowOf: v2RowOf, columnXs: v2ColumnCenters,
-  });
+  }) : null;
   let top = layoutV2.firstRowTop;
   v2Rows.forEach((laneId, index) => {
     const rowHeight = Math.max(layoutV2.stateH, ...[...states.values()]
       .filter((state) => state.lane === laneId)
       .map((state) => state.y + state.height - v2RowTop.get(laneId)));
     v2RowTop.set(laneId, top);
-    top += rowHeight + Math.max(layoutV2.rowPitch - layoutV2.stateH, probe.gapHeight(index));
+    top += rowHeight + Math.max(layoutV2.rowPitch - layoutV2.stateH, probe?.gapHeight(index) || 0);
   });
   for (const state of asArray(lifecycle.states)) states.set(state.id, measureState(state));
 }
@@ -612,7 +619,7 @@ function plannerRouted(transition) {
 const plannedTransitions = asArray(lifecycle.transitions).filter(plannerRouted);
 // v2 states sit on a fixed row/column grid, so automatic transitions use the
 // dedicated orthogonal grid router; v1 keeps the shared obstacle planner.
-const planner = isV2 ? createLifecycleGridRouter(states, plannedTransitions, {
+const planner = useGridRouter ? createLifecycleGridRouter(states, plannedTransitions, {
   rowOf: v2RowOf,
   columnXs: v2ColumnCenters,
 }) : createRouter(states, plannedTransitions, {
@@ -647,7 +654,7 @@ function pathFor(transition) {
   if (pathCache.has(transition)) return pathCache.get(transition);
   if (plannerRouted(transition)) {
     let routed = planner.pathFor(transition);
-    if (isV2) routed = { d: roundedPath(routed, transition.cornerRadius ?? 10), points: routed };
+    if (useGridRouter) routed = { d: roundedPath(routed, transition.cornerRadius ?? 10), points: routed };
     pathCache.set(transition, routed);
     return routed;
   }
