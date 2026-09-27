@@ -121,6 +121,8 @@
       }
       function clear() {
         html.style.removeProperty('--archify-reader-width');
+        html.style.removeProperty('--archify-diagram-max-width');
+        html.removeAttribute('data-reader-narrow');
         html.removeAttribute('data-reader-layout');
         html.removeAttribute('data-reader-overflow');
         setRail(false);
@@ -182,11 +184,22 @@
             number(diagramStyle.borderTopWidth) + number(diagramStyle.borderBottomWidth)
         };
       }
+      // `width` is the diagram's reading width. The page shell never narrows
+      // below the desktop reader floor, so a narrow, tall diagram keeps a
+      // usable header, toolbar, and controls; its SVG is centred instead.
       function applyWidth(width, minWidth) {
         var rounded = Math.max(Math.ceil(minWidth || 0), Math.round(width));
         if (Math.abs(rounded - lastWidth) < 1) return false;
         lastWidth = rounded;
-        html.style.setProperty('--archify-reader-width', rounded + 'px');
+        var shellFloor = Math.min(MIN_READER_WIDTH, Math.max(0, window.innerWidth - chromeMetrics().bodyX));
+        html.style.setProperty('--archify-reader-width', Math.max(rounded, shellFloor) + 'px');
+        if (rounded < shellFloor) {
+          html.style.setProperty('--archify-diagram-max-width', Math.max(1, rounded - chromeMetrics().diagramX) + 'px');
+          html.setAttribute('data-reader-narrow', 'true');
+        } else {
+          html.style.removeProperty('--archify-diagram-max-width');
+          html.removeAttribute('data-reader-narrow');
+        }
         html.setAttribute('data-reader-layout', 'adaptive');
         return true;
       }

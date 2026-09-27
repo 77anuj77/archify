@@ -608,6 +608,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       max-width: var(--archify-reader-width, 1440px);
       margin: 0 auto;
     }
+    html[data-reader-narrow="true"]:not([data-present="true"]) .diagram-container > svg {
+      min-width: 0;
+      max-width: var(--archify-diagram-max-width);
+      margin-inline: auto;
+    }
     @media (min-width: 768px) and (max-height: 920px) {
       .header { margin-bottom: 1rem; }
       .diagram-container { padding: 1rem; }
@@ -9576,6 +9581,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       }
       function clear() {
         html.style.removeProperty('--archify-reader-width');
+        html.style.removeProperty('--archify-diagram-max-width');
+        html.removeAttribute('data-reader-narrow');
         html.removeAttribute('data-reader-layout');
         html.removeAttribute('data-reader-overflow');
         setRail(false);
@@ -9637,11 +9644,22 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             number(diagramStyle.borderTopWidth) + number(diagramStyle.borderBottomWidth)
         };
       }
+      // `width` is the diagram's reading width. The page shell never narrows
+      // below the desktop reader floor, so a narrow, tall diagram keeps a
+      // usable header, toolbar, and controls; its SVG is centred instead.
       function applyWidth(width, minWidth) {
         var rounded = Math.max(Math.ceil(minWidth || 0), Math.round(width));
         if (Math.abs(rounded - lastWidth) < 1) return false;
         lastWidth = rounded;
-        html.style.setProperty('--archify-reader-width', rounded + 'px');
+        var shellFloor = Math.min(MIN_READER_WIDTH, Math.max(0, window.innerWidth - chromeMetrics().bodyX));
+        html.style.setProperty('--archify-reader-width', Math.max(rounded, shellFloor) + 'px');
+        if (rounded < shellFloor) {
+          html.style.setProperty('--archify-diagram-max-width', Math.max(1, rounded - chromeMetrics().diagramX) + 'px');
+          html.setAttribute('data-reader-narrow', 'true');
+        } else {
+          html.style.removeProperty('--archify-diagram-max-width');
+          html.removeAttribute('data-reader-narrow');
+        }
         html.setAttribute('data-reader-layout', 'adaptive');
         return true;
       }

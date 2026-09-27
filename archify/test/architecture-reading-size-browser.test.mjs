@@ -94,12 +94,19 @@ test('a narrow tall architecture fits the first screen without enlarging the oth
       const scale = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
       return {
         diagramBottom: document.querySelector('.diagram-container').getBoundingClientRect().bottom,
+        shellWidth: document.querySelector('.container').getBoundingClientRect().width,
+        svgWidth: svg.getBoundingClientRect().width,
+        titleLines: Math.round(document.querySelector('.header h1').getBoundingClientRect().height / parseFloat(getComputedStyle(document.querySelector('.header h1')).lineHeight)),
         sizes: [...svg.querySelectorAll('text[data-node-label]')].map(text => ({
           source: Number(text.getAttribute('font-size')), projected: Number(text.getAttribute('font-size')) * scale })),
       };
     })()` }, session);
     assert.equal(result.exceptionDetails, undefined);
-    const { sizes, diagramBottom } = result.result.value;
+    const { sizes, diagramBottom, shellWidth, svgWidth, titleLines } = result.result.value;
+    // A narrow diagram is centred in a full-width reader shell, so the title,
+    // toolbar, and diagram controls keep their desktop layout.
+    assert.ok(shellWidth >= 960 && svgWidth < shellWidth - 200, JSON.stringify({ shellWidth, svgWidth }));
+    assert.equal(titleLines, 1, 'the diagram title must not wrap in a narrow reader');
     assert.ok(sizes[0].source < sizes[1].source, 'fixture must contain a fitted long title');
     // With notes below the fold the whole graph takes the first screen: text
     // may shrink toward the declared 7.5px floor, and hierarchy still holds.
