@@ -69,7 +69,7 @@ test('automatic architectures preserve primary reading size when fitting the ful
   }
 });
 
-test('one long label does not enlarge the other titles in a narrow tall architecture', async (t) => {
+test('a narrow tall architecture fits the first screen without enlarging the other titles', async (t) => {
   if (!Object.hasOwn(process.env, 'ARCHIFY_CHROME')) return t.skip('Set ARCHIFY_CHROME for real browser checks');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-reading-size-stress-'));
   const input = path.join(dir, 'input.json');
@@ -92,16 +92,21 @@ test('one long label does not enlarge the other titles in a narrow tall architec
     const result = await browser.cdp.send('Runtime.evaluate', { returnByValue: true, expression: `(() => {
       const svg = document.querySelector('.diagram-container > svg');
       const scale = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
-      return [...svg.querySelectorAll('text[data-node-label]')].map(text => ({
-        source: Number(text.getAttribute('font-size')), projected: Number(text.getAttribute('font-size')) * scale }));
+      return {
+        diagramBottom: document.querySelector('.diagram-container').getBoundingClientRect().bottom,
+        sizes: [...svg.querySelectorAll('text[data-node-label]')].map(text => ({
+          source: Number(text.getAttribute('font-size')), projected: Number(text.getAttribute('font-size')) * scale })),
+      };
     })()` }, session);
     assert.equal(result.exceptionDetails, undefined);
-    const sizes = result.result.value;
+    const { sizes, diagramBottom } = result.result.value;
     assert.ok(sizes[0].source < sizes[1].source, 'fixture must contain a fitted long title');
-    // The bottom rail may trade comfort down to 12px; hierarchy still holds.
-    assert.ok(sizes[1].projected >= 12 - 0.01 && sizes[1].projected <= 14.2, JSON.stringify(sizes));
+    // With notes below the fold the whole graph takes the first screen: text
+    // may shrink toward the declared 7.5px floor, and hierarchy still holds.
+    assert.ok(sizes[0].projected < sizes[1].projected, JSON.stringify(sizes));
+    assert.ok(sizes[0].projected >= 7.5 - 0.01 && sizes[1].projected <= 14.2, JSON.stringify(sizes));
     assert.ok(metrics.scrollWidth <= 1440);
-    assert.ok(metrics.scrollHeight > 900, 'preserve ordinary scroll instead of shrinking the tall graph');
+    assert.ok(diagramBottom <= 900, `the tall graph must fit the first screen (diagram bottom ${diagramBottom})`);
   } finally {
     await browser.close();
     fs.rmSync(dir, { recursive: true, force: true });

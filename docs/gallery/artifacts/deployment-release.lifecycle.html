@@ -9718,10 +9718,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           if (collapsedPreference === '1' || (collapsedPreference !== '0' && !comfortable)) mode = 'collapsed';
           else mode = fitsReadable ? 'true' : 'overlay';
         }
-        // With notes below the fold, the diagram may trade the renderer's
-        // comfortable primary size down to the rail's 12px floor so it and its
-        // controls fit the first screen; taller graphs still scroll.
-        if (mode === 'bottom' && primaryWidth > 0) primaryWidth = labelWidth(Math.min(RAIL_COMFORT_PRIMARY_PX, declaredPrimaryText));
+        // With notes below the fold, the first screen belongs to the whole
+        // diagram and its controls: it may shrink past the comfortable primary
+        // size down to the renderer's readable text floor, and zoom restores
+        // detail. Only a graph taller than that floor allows still scrolls.
+        if (mode === 'bottom') primaryWidth = 0;
         if (primaryWidth > 0) minWidth = Math.max(minWidth, Math.min(maxWidth, primaryWidth + chrome.diagramX));
         var docked = mode === 'true';
         setRail(mode);

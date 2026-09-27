@@ -14334,10 +14334,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           if (collapsedPreference === &#39;1&#39; || (collapsedPreference !== &#39;0&#39; &amp;&amp; !comfortable)) mode = &#39;collapsed&#39;;
           else mode = fitsReadable ? &#39;true&#39; : &#39;overlay&#39;;
         }
-        // With notes below the fold, the diagram may trade the renderer&#39;s
-        // comfortable primary size down to the rail&#39;s 12px floor so it and its
-        // controls fit the first screen; taller graphs still scroll.
-        if (mode === &#39;bottom&#39; &amp;&amp; primaryWidth &gt; 0) primaryWidth = labelWidth(Math.min(RAIL_COMFORT_PRIMARY_PX, declaredPrimaryText));
+        // With notes below the fold, the first screen belongs to the whole
+        // diagram and its controls: it may shrink past the comfortable primary
+        // size down to the renderer&#39;s readable text floor, and zoom restores
+        // detail. Only a graph taller than that floor allows still scrolls.
+        if (mode === &#39;bottom&#39;) primaryWidth = 0;
         if (primaryWidth &gt; 0) minWidth = Math.max(minWidth, Math.min(maxWidth, primaryWidth + chrome.diagramX));
         var docked = mode === &#39;true&#39;;
         setRail(mode);
@@ -28356,10 +28357,11 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           if (collapsedPreference === &#39;1&#39; || (collapsedPreference !== &#39;0&#39; &amp;&amp; !comfortable)) mode = &#39;collapsed&#39;;
           else mode = fitsReadable ? &#39;true&#39; : &#39;overlay&#39;;
         }
-        // With notes below the fold, the diagram may trade the renderer&#39;s
-        // comfortable primary size down to the rail&#39;s 12px floor so it and its
-        // controls fit the first screen; taller graphs still scroll.
-        if (mode === &#39;bottom&#39; &amp;&amp; primaryWidth &gt; 0) primaryWidth = labelWidth(Math.min(RAIL_COMFORT_PRIMARY_PX, declaredPrimaryText));
+        // With notes below the fold, the first screen belongs to the whole
+        // diagram and its controls: it may shrink past the comfortable primary
+        // size down to the renderer&#39;s readable text floor, and zoom restores
+        // detail. Only a graph taller than that floor allows still scrolls.
+        if (mode === &#39;bottom&#39;) primaryWidth = 0;
         if (primaryWidth &gt; 0) minWidth = Math.max(minWidth, Math.min(maxWidth, primaryWidth + chrome.diagramX));
         var docked = mode === &#39;true&#39;;
         setRail(mode);
