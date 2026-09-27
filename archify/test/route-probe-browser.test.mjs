@@ -138,8 +138,13 @@ test('Route Probe preserves directed paths, Journey and export contracts', {
     await load('architecture', { suffix: '&embed=1#route=users~db' });
     assert.equal(await run('Archify.routeProbe.begin()'), false);
     const embeddedRoute = await snapshot('embed-hash');
-    assert.equal(embeddedRoute.active, 'result');
-    assert.deepEqual(embeddedRoute.result.nodes, ['users', 'cdn', 'lb', 'api', 'db']);
+    assert.equal(embeddedRoute.active, null);
+    assert.equal(embeddedRoute.result, null);
+    await load('sequence', { suffix: '&embed=1#focus=web&reach=downstream' });
+    const embeddedFocus = await snapshot('embed-focus');
+    assert.equal(embeddedFocus.focus, 'web');
+    assert.equal(embeddedFocus.active, null);
+    assert.equal(embeddedFocus.hash, '#focus=web&reach=downstream');
   });
 
   await t.test('SVG graph fixtures preserve directed BFS order, parallel edges and strict export snapshots', async () => {

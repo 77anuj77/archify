@@ -145,6 +145,7 @@
     classic: {
       artifact: 'gallery/artifacts/cache-miss.sequence.html',
       hash: '#route=web~db',
+      embedHash: '#focus=web&reach=downstream',
       iframeTitle: { en: 'Cache Miss Request live Archify proof', zh: '缓存未命中请求 Archify 实时成品' },
       name: { en: 'Cache Miss', zh: '缓存未命中' },
       meta: { en: 'Sequence · Classic · 7 participants · 12 messages', zh: '时序图 · Classic · 7 个参与者 · 12 条消息' },
@@ -163,7 +164,7 @@
   const proofTitle = document.getElementById('proof-title');
 
   function proofEmbedUrl(proof) {
-    return `${proof.artifact}?embed=1&theme=dark${proof.hash}`;
+    return `${proof.artifact}?embed=1&theme=dark${proof.embedHash || proof.hash}`;
   }
 
   function fillRail() {
