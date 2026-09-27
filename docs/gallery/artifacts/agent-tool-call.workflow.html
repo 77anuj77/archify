@@ -14268,7 +14268,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       }
       function begin(options) {
         options = options || {};
-        if (html.getAttribute('data-embed') === 'true') return false;
+        if (html.getAttribute('data-embed') === 'true' && options.fromHash !== true) return false;
         if (Archify.semanticLens && typeof Archify.semanticLens.clearPreview === 'function') Archify.semanticLens.clearPreview();
         if (Archify.semanticLens && Archify.semanticLens.active()) {
           Archify.semanticLens.clear({ updateUrl: false, preserveView: true, closePanel: true });
@@ -14418,7 +14418,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           if (parts.length !== 2) return;
           var byId = nodesById();
           if (!byId[parts[0]] || !byId[parts[1]]) return;
-          begin({ source: parts[0], focusNode: false });
+          begin({ source: parts[0], focusNode: false, fromHash: true });
           choose(parts[1], { updateUrl: false });
         } catch (_) {}
       }
@@ -14515,6 +14515,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         }
       };
     })();
+
 
     /* ============================================================
        Semantic Lens — a counted, viewer-only legend over data-node-kind.
