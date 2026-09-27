@@ -471,13 +471,101 @@ for (const [key, messages] of Object.entries(MESSAGE_PAIRS)) {
   }
 }
 
-const CATALOGS = Object.fromEntries(SUPPORTED_LOCALES.map((locale, index) => [
+const BUILTIN_CATALOGS = Object.fromEntries(SUPPORTED_LOCALES.map((locale, index) => [
   locale,
   Object.fromEntries(Object.entries(MESSAGE_PAIRS).map(([key, pair]) => [key, pair[index]])),
 ]));
 
+const EN = BUILTIN_CATALOGS.en;
+
+const CANONICAL_KEYS = Object.keys(EN);
+const PLACEHOLDER_PATTERN = /\{([a-zA-Z0-9_]+)\}/g;
+
+function extractPlaceholders(message) {
+  return new Set([...String(message).matchAll(PLACEHOLDER_PATTERN)].map((match) => match[1]));
+}
+
+const CANONICAL_PLACEHOLDERS = Object.fromEntries(
+  CANONICAL_KEYS.map((key) => [key, extractPlaceholders(EN[key])]),
+);
+
+function placeholdersMatch(expected, actual) {
+  if (expected.size !== actual.size) return false;
+  for (const token of expected) if (!actual.has(token)) return false;
+  return true;
+}
+
+// Runtime catalogs registered by registerLocale(), keyed by whatever locale
+// tag the caller supplied (e.g. an agent-authored 'fr'). Kept separate from
+// BUILTIN_CATALOGS so a caller can never accidentally shadow a shipped
+// catalog with a partial one.
+const RUNTIME_CATALOGS = new Map();
+
+function catalogFor(locale) {
+  return RUNTIME_CATALOGS.get(locale) || BUILTIN_CATALOGS[locale];
+}
+
+// Validates caller-supplied translation data against the canonical (English)
+// message-key set. Pure and side-effect free: registerLocale() calls this
+// and additionally builds/installs the resolved catalog.
+export function validateTranslations(translations = {}) {
+  const supplied = Object.keys(translations || {});
+  const suppliedSet = new Set(supplied);
+  const missingKeys = CANONICAL_KEYS.filter((key) => !suppliedSet.has(key));
+  const unknownKeys = supplied.filter((key) => !Object.hasOwn(CANONICAL_PLACEHOLDERS, key));
+  const placeholderMismatches = [];
+  const usableKeys = [];
+  for (const key of supplied) {
+    if (!Object.hasOwn(CANONICAL_PLACEHOLDERS, key)) continue;
+    const value = translations[key];
+    if (typeof value !== 'string' || value.length === 0) {
+      placeholderMismatches.push({ key, expected: [...CANONICAL_PLACEHOLDERS[key]].sort(), actual: null });
+      continue;
+    }
+    const actual = extractPlaceholders(value);
+    if (placeholdersMatch(CANONICAL_PLACEHOLDERS[key], actual)) {
+      usableKeys.push(key);
+    } else {
+      placeholderMismatches.push({
+        key,
+        expected: [...CANONICAL_PLACEHOLDERS[key]].sort(),
+        actual: [...actual].sort(),
+      });
+    }
+  }
+  return {
+    totalKeys: CANONICAL_KEYS.length,
+    coveredKeys: usableKeys.length,
+    coverage: CANONICAL_KEYS.length ? usableKeys.length / CANONICAL_KEYS.length : 1,
+    missingKeys,
+    unknownKeys,
+    placeholderMismatches,
+  };
+}
+
+// Registers a fully-resolved catalog for an arbitrary locale tag, built by
+// layering validated translations over the English base. A key that is
+// missing, non-string, or whose interpolation placeholders don't match the
+// canonical set falls back to its English string — partial or malformed
+// translation data can never break rendering. Returns the same coverage
+// report validateTranslations() would, for the caller to surface as an
+// explicit fallback/coverage diagnostic before rendering.
+export function registerLocale(locale, translations = {}) {
+  const report = validateTranslations(translations);
+  const catalog = { ...EN };
+  for (const key of CANONICAL_KEYS) {
+    const value = translations?.[key];
+    if (typeof value !== 'string' || value.length === 0) continue;
+    if (placeholdersMatch(CANONICAL_PLACEHOLDERS[key], extractPlaceholders(value))) {
+      catalog[key] = value;
+    }
+  }
+  RUNTIME_CATALOGS.set(locale, catalog);
+  return { locale, ...report };
+}
+
 export function resolveLocale(locale) {
-  return SUPPORTED_LOCALES.includes(locale) ? locale : DEFAULT_LOCALE;
+  return catalogFor(locale) ? locale : DEFAULT_LOCALE;
 }
 
 export function formatMessage(template, values = {}) {
@@ -488,10 +576,11 @@ export function formatMessage(template, values = {}) {
 
 export function translateMessage(locale, key, values = {}) {
   const resolved = resolveLocale(locale);
-  if (!Object.hasOwn(CATALOGS[resolved], key)) {
+  const catalog = catalogFor(resolved);
+  if (!Object.hasOwn(catalog, key)) {
     throw new Error(`Missing Archify i18n message ${JSON.stringify(key)} for ${resolved}`);
   }
-  return formatMessage(CATALOGS[resolved][key], values);
+  return formatMessage(catalog[key], values);
 }
 
 export function translateCount(locale, key, count, values = {}) {
@@ -501,7 +590,7 @@ export function translateCount(locale, key, count, values = {}) {
 
 export function viewerCatalog(locale) {
   const resolved = resolveLocale(locale);
-  return Object.fromEntries(Object.entries(CATALOGS[resolved]).filter(([key]) => key.startsWith('viewer.')));
+  return Object.fromEntries(Object.entries(catalogFor(resolved)).filter(([key]) => key.startsWith('viewer.')));
 }
 
 export function localizeTemplate(template, locale) {
@@ -509,5 +598,5 @@ export function localizeTemplate(template, locale) {
 }
 
 export function catalogKeys() {
-  return Object.keys(MESSAGE_PAIRS);
+  return [...CANONICAL_KEYS];
 }
