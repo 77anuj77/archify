@@ -100,6 +100,32 @@ test('edge labels use the same variant color contract as their paths in every sh
   }
 });
 
+test('sequence message labels match their line color and lifelines stop above the legend', () => {
+  const source = JSON.parse(fs.readFileSync(path.join(skillRoot, 'examples/cache-miss-request.sequence.json'), 'utf8'));
+  const variants = ['emphasis', 'security', 'dashed', 'default', 'return'];
+  variants.forEach((variant, index) => {
+    Object.assign(source.messages[index], { id: `message-${variant}`, variant, label: `M${index}` });
+  });
+  const input = path.join(tmp, 'sequence-labels.json');
+  const output = path.join(tmp, 'sequence-labels.html');
+  fs.writeFileSync(input, JSON.stringify(source));
+  const result = spawnSync(process.execPath, [cli, 'render', 'sequence', input, output], { cwd: skillRoot, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  const html = fs.readFileSync(output, 'utf8');
+  variants.forEach((variant, index) => {
+    // Colored lines share their color with the label; gray lines keep the
+    // readable muted text color.
+    const expected = ['default', 'return'].includes(variant) ? 't-muted' : `t-edge-${variant}`;
+    assert.equal(classForLabel(html, `message-${variant}`, `M${index}`), expected, variant);
+  });
+  const legendTitle = Number(html.match(/<text x="[\d.]+" y="([\d.]+)"[^>]*>Legend<\/text>/)[1]);
+  const lifelineEnds = [...html.matchAll(/<path d="M ([\d.]+) 142 L \1 ([\d.]+)" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"\/>/g)]
+    .map((match) => Number(match[2]));
+  assert.ok(lifelineEnds.length > 0, 'lifelines rendered');
+  // Legend title glyphs start about 12px above their baseline.
+  for (const end of lifelineEnds) assert.ok(end <= legendTitle - 12, `lifeline ends at ${end}, legend title at ${legendTitle}`);
+});
+
 test('edge path and label classes resolve to the same theme token', () => {
   const template = fs.readFileSync(path.join(skillRoot, 'assets/template.html'), 'utf8');
   for (const variant of VARIANTS) {

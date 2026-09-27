@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url';
 import { esc, renderDefinitions, renderSemanticSigil, textUnits } from '../shared/utils.mjs';
 import { animateAttr, focusEdgeAttrs, focusNodeAttrs, focusNodeTitle, loadDiagramWithBrandMarks, writeDiagram, svgAccessibleText, svgRootAttrs } from '../shared/cli.mjs';
 import { throwDiagnosticProblems } from '../shared/diagnostics.mjs';
-import { resolveLegend, renderLegend as renderResolvedLegend } from '../shared/legend.mjs';
-import { componentFill, arrowClassMap, rectsOverlap, cleanFlowProblems, cleanCrossingProblems, cleanAmbiguousCorridorProblems, cleanBorderRunProblems, cleanRouteRhythmProblems, cleanLabelRouteClearanceProblems, cleanLabelCanvasContainmentProblems, routePointsValue, asArray, isFinitePoint } from '../shared/geometry.mjs';
+import { measureLegend, resolveLegend, renderLegend as renderResolvedLegend } from '../shared/legend.mjs';
+import { componentFill, arrowClassMap, rectsOverlap, cleanFlowProblems, cleanCrossingProblems, cleanAmbiguousCorridorProblems, cleanBorderRunProblems, cleanRouteRhythmProblems, cleanLabelRouteClearanceProblems, cleanLabelCanvasContainmentProblems, routePointsValue, asArray, isFinitePoint, edgeLabelAccent } from '../shared/geometry.mjs';
 import { availableNodeTextWidth, fittedNodeFontSize, minimumNodeTextWidth } from '../shared/text-fit.mjs';
 import { brandLabelFitWidth, brandMetadataFor, brandTopRailProblem, renderBrandMark } from '../shared/brand-marks.mjs';
 import { translateMessage as i18nText } from '../shared/i18n.mjs';
@@ -348,8 +348,22 @@ function renderParticipant(participant) {
         </g>`;
 }
 
-function renderLifeline(participant) {
-  return `        <path d="M ${participant.cx} ${layout.lifelineTop} L ${participant.cx} ${layout.lifelineBottom}" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>`;
+// Lifelines are drawn only to the timeline's content, and never into the
+// legend band below it. The authored timeline bounds used by validation stay
+// unchanged; only the drawn guide is shortened.
+function lifelineEnd() {
+  const contentBottom = Math.max(
+    layout.lifelineTop,
+    ...asArray(sequence.messages).map((message) => message.y + (message.note ? 22 : 6)),
+    ...asArray(sequence.activations).map((activation) => activation.to),
+  );
+  const legend = measureLegend(legendEntries(), legendLayout());
+  const legendTop = legend?.titleY == null ? Infinity : legend.titleY - 22;
+  return Math.max(Math.min(layout.lifelineBottom, legendTop), contentBottom);
+}
+
+function renderLifeline(participant, end) {
+  return `        <path d="M ${participant.cx} ${layout.lifelineTop} L ${participant.cx} ${end}" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>`;
 }
 
 function renderSegment(segment, index) {
@@ -378,13 +392,9 @@ function messageLabel(message, x1, x2) {
   const center = box ? box.x + box.width / 2 : (x1 + x2) / 2;
   const y = message.y - 10;
   const labelW = box?.width || Math.max(34, textUnits(message.label) * messageUnitWidth + 12);
-  const accent = message.variant === 'security'
-    ? 't-security'
-    : message.variant === 'dashed'
-      ? 't-messagebus'
-      : message.variant === 'return'
-        ? 't-muted'
-        : 't-backend';
+  // A colored line gets a label in the same color, as in the legend swatches.
+  // Gray lines (default and return) keep the readable muted text color.
+  const accent = ['emphasis', 'security', 'dashed'].includes(message.variant) ? edgeLabelAccent(message.variant) : 't-muted';
   return `        <g data-detail="context">
           <rect x="${center - labelW / 2}" y="${y - 10}" width="${labelW}" height="${layout.labelH}" rx="3" class="c-mask"/>
           <text x="${center}" y="${y}" class="${accent}" font-size="${messageFontSize}" text-anchor="middle">${esc(message.label)}</text>
@@ -419,20 +429,27 @@ const LEGEND_CATALOG = [
   label: i18nText(sequence.meta.locale, `legend.sequence.${entry.kind}`),
 }));
 
-function renderLegend() {
+function legendEntries() {
   const presentKinds = new Set(asArray(sequence.messages).map((message) => message.variant || 'default'));
-  const entries = resolveLegend(sequence.meta?.legend, LEGEND_CATALOG, presentKinds);
+  return resolveLegend(sequence.meta?.legend, LEGEND_CATALOG, presentKinds);
+}
+
+function legendLayout() {
+  return {
+    x: 40,
+    baselineY: layout.legendY,
+    width: viewBox[0] - 80,
+    minTitleY: layout.legendY - 30,
+    unfit: sequence.meta?.legend === undefined ? 'hide' : 'error',
+    diagramType: 'sequence',
+  };
+}
+
+function renderLegend() {
   return renderResolvedLegend({
-    entries,
+    entries: legendEntries(),
     locale: sequence.meta.locale,
-    layout: {
-      x: 40,
-      baselineY: layout.legendY,
-      width: viewBox[0] - 80,
-      minTitleY: layout.legendY - 30,
-      unfit: sequence.meta?.legend === undefined ? 'hide' : 'error',
-      diagramType: 'sequence',
-    },
+    layout: legendLayout(),
     renderSwatch: (entry) => `<path d="M ${entry.x} ${entry.baseline - 3} L ${entry.x + 34} ${entry.baseline - 3}" class="${entry.className}" stroke-width="${entry.strokeWidth || 1.4}"${entry.dash ? ` stroke-dasharray="${entry.dash}"` : ''} marker-end="url(#${entry.marker})"/>`,
   });
 }
@@ -454,7 +471,7 @@ ${renderDefinitions()}
 ${asArray(sequence.segments).map(renderSegment).join('\n\n')}
 
         <!-- Lifelines -->
-${participantList.map(renderLifeline).join('\n')}
+${participantList.map((participant) => renderLifeline(participant, lifelineEnd())).join('\n')}
 
         <!-- Activations -->
 ${asArray(sequence.activations).map(renderActivation).join('\n')}
