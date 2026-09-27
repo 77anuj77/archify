@@ -14,6 +14,14 @@ const read = (dir, file) => fs.readFileSync(path.join(dir, file), 'utf8');
 function elements(node, tag) {
   return [ ...(node.tagName === tag ? [node] : []), ...(node.childNodes || []).flatMap(child => elements(child, tag)) ];
 }
+function attr(node, name) {
+  return node?.attrs?.find(attribute => attribute.name === name)?.value;
+}
+function byId(node, id) {
+  if (!node) return undefined;
+  return [node, ...(node.childNodes || []).flatMap(child => byId(child, id)).filter(Boolean)]
+    .find(candidate => attr(candidate, 'id') === id);
+}
 function semantic(node) {
   if (node.nodeName === '#comment') return null;
   if (node.nodeName === '#text') {
@@ -32,10 +40,16 @@ for (const page of pages) {
     const old = parse(read(docs, page)), next = parse(read(dist, page));
     if (page === 'index.html') {
       const current = read(dist, page);
-      assert.match(current, /\?embed=1&amp;theme=dark#focus=planner&amp;reach=downstream/);
-      assert.match(current, /\?present=1#focus=planner&amp;reach=downstream/);
-      assert.match(current, /hash: '#lens=backend~database'/);
-      assert.match(current, /hash: '#route=web~db'/);
+      const body = elements(next, 'body')[0];
+      const frame = byId(body, 'hero-proof-frame');
+      const open = byId(body, 'proof-open');
+      assert.equal(attr(frame, 'src'), 'gallery/artifacts/agent-tool-call.workflow.html?embed=1&theme=dark#focus=planner&reach=downstream');
+      assert.equal(attr(open, 'href'), 'gallery/artifacts/agent-tool-call.workflow.html?present=1#focus=planner&reach=downstream');
+      const proofScript = elements(next, 'script').find(script => (script.childNodes || []).some(child => (child.value || '').includes("hash: '#lens=backend~database'")));
+      assert.ok(proofScript, 'homepage proof configuration must remain present');
+      const scriptText = proofScript.childNodes.map(child => child.value || '').join('');
+      assert.match(scriptText, /hash: '#lens=backend~database'/);
+      assert.match(scriptText, /hash: '#route=web~db'/);
       assert.doesNotMatch(current, /play=1|#view=|Guided views|Play story/);
     } else {
       assert.deepEqual(semantic(elements(next, 'body')[0]), semantic(elements(old, 'body')[0]));
