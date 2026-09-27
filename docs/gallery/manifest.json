@@ -288,9 +288,9 @@
       "nodeCount": 7,
       "edgeCount": 12,
       "artifactBytes": 759989,
-      "artifactSha256": "79fff23bd5760dcd1ba126ac0c90ca15691cbaf3615108eaa8050a1db989bc98",
+      "artifactSha256": "6e7d6935ab2de9bd028496829500f8dd732afe6b14cf0467284ff1a531634cf4",
       "sourceBytes": 3805,
-      "sourceSha256": "f5c2e44f9a44000adc7c3b3040c4fcd88fe50b7cf8761302c21eb0c184e5780a",
+      "sourceSha256": "f8486daa803fff6c295cecca4604c561fbbf9acb2e83326022b5a87639e8afe6",
       "checks": [
         {
           "name": "single_svg",

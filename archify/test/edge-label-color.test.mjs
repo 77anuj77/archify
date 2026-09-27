@@ -126,6 +126,50 @@ test('sequence message labels match their line color and lifelines stop above th
   for (const end of lifelineEnds) assert.ok(end <= legendTitle - 12, `lifeline ends at ${end}, legend title at ${legendTitle}`);
 });
 
+test('sequence legend stays below a late message with a note', () => {
+  const doc = (viewBox) => ({
+    schema_version: 1, diagram_type: 'sequence',
+    meta: { title: 'Late message', output: 'late.html', quality_profile: 'showcase', ...(viewBox ? { viewBox } : {}) },
+    participants: [{ id: 'a', type: 'frontend', label: 'Client' }, { id: 'b', type: 'backend', label: 'Server' }],
+    messages: [
+      { from: 'a', to: 'b', y: 180, label: 'open' },
+      { id: 'late', from: 'a', to: 'b', y: viewBox ? 477 : 690, label: 'request', note: 'completed', variant: 'emphasis' },
+    ],
+  });
+  const run = (name, source, command) => {
+    const input = path.join(tmp, `${name}.json`);
+    const output = path.join(tmp, `${name}.html`);
+    fs.writeFileSync(input, JSON.stringify(source));
+    const result = spawnSync(process.execPath, [cli, command, 'sequence', input, ...(command === 'render' ? [output] : ['--json'])], { cwd: skillRoot, encoding: 'utf8' });
+    return { result, output };
+  };
+
+  // An authored canvas that cannot hold content and legend fails with the
+  // exact repair instead of drawing the legend over the late note.
+  const authored = run('sequence-late-authored', doc([1080, 560]), 'validate');
+  assert.notEqual(authored.result.status, 0);
+  assert.match(authored.result.stdout, /set meta\.viewBox\[1\] to at least 597/);
+  const repaired = run('sequence-late-repaired', doc([1080, 597]), 'render');
+  assert.equal(repaired.result.status, 0, repaired.result.stderr);
+
+  // A renderer-sized canvas grows so the legend clears the late note, and the
+  // lifelines still reach the last message.
+  const automatic = run('sequence-late-automatic', doc(null), 'render');
+  assert.equal(automatic.result.status, 0, automatic.result.stderr);
+  for (const output of [repaired.output, automatic.output]) {
+    const html = fs.readFileSync(output, 'utf8');
+    const legendTitle = Number(html.match(/<text x="[\d.]+" y="([\d.]+)"[^>]*>Legend<\/text>/)[1]);
+    const lateY = Number(html.match(/data-edge-id="late"[\s\S]*?d="M [\d.]+ ([\d.]+) L/)[1]);
+    const noteY = Number(html.match(/<text data-detail="fine"[^>]*>completed<\/text>/)[0].match(/ y="([\d.]+)"/)[1]);
+    assert.ok(noteY + 2 < legendTitle - 12, `note at ${noteY} must stay above the legend title at ${legendTitle}`);
+    for (const match of html.matchAll(/<path d="M ([\d.]+) 142 L \1 ([\d.]+)" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"\/>/g)) {
+      const end = Number(match[2]);
+      assert.ok(end >= lateY && end <= legendTitle - 12, `lifeline end ${end}: last message ${lateY}, legend title ${legendTitle}`);
+    }
+  }
+  assert.ok(Number(fs.readFileSync(automatic.output, 'utf8').match(/<svg viewBox="0 0 920 (\d+)"/)[1]) > 760);
+});
+
 test('edge path and label classes resolve to the same theme token', () => {
   const template = fs.readFileSync(path.join(skillRoot, 'assets/template.html'), 'utf8');
   for (const variant of VARIANTS) {
