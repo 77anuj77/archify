@@ -14164,24 +14164,34 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         var style = window.getComputedStyle(element);
         return element.getBoundingClientRect().height + number(style.marginTop) + number(style.marginBottom);
       }
+      // Smallest scale that keeps node text at the requested floor and
+      // context relationship labels readable. A declared wide reader holds
+      // relationship labels to the requested floor too; every other reader
+      // still keeps them at the 6px hard floor the browser gate enforces, so
+      // a first-screen fit can never push them below it.
       function minimumReadableScale() {
-        var sourceMinimum = null;
-        var selectors = [
-          &#39;text[data-node-label], text[data-boundary-label], text[data-detail=&quot;context&quot;]&#39;
-        ];
-        if (measuredHeightFit &amp;&amp; ratio &gt;= WIDE_RATIO &amp;&amp; Number.isFinite(declaredMinimumText)) {
-          selectors.push(&#39;g[data-detail=&quot;context&quot;][data-edge-from][data-edge-to] &gt; text&#39;);
-        }
-        Array.from(svg.querySelectorAll(selectors.join(&#39;, &#39;))).forEach(function (text) {
-          if (text.getAttribute(&#39;data-detail&#39;) === &#39;context&#39; &amp;&amp; !text.closest(&#39;[data-node-id]&#39;)) return;
+        var nodeMinimum = null;
+        var edgeMinimum = null;
+        var selectors = &#39;text[data-node-label], text[data-boundary-label], text[data-detail=&quot;context&quot;], g[data-detail=&quot;context&quot;] text&#39;;
+        Array.from(svg.querySelectorAll(selectors)).forEach(function (text) {
+          if (text.getAttribute(&#39;data-detail&#39;) === &#39;fine&#39; || text.closest(&#39;[data-detail=&quot;fine&quot;]&#39;)) return;
           var sourceFontPx = parseFloat(text.getAttribute(&#39;font-size&#39;) || &#39;&#39;);
-          if (Number.isFinite(sourceFontPx)) {
-            sourceMinimum = sourceMinimum == null ? sourceFontPx : Math.min(sourceMinimum, sourceFontPx);
+          if (!Number.isFinite(sourceFontPx)) return;
+          var primary = text.hasAttribute(&#39;data-node-label&#39;) || text.hasAttribute(&#39;data-boundary-label&#39;);
+          var context = text.getAttribute(&#39;data-detail&#39;) === &#39;context&#39; || Boolean(text.closest(&#39;g[data-detail=&quot;context&quot;]&#39;));
+          if (!primary &amp;&amp; context &amp;&amp; text.closest(&#39;[data-edge-from][data-edge-to]&#39;)) {
+            edgeMinimum = edgeMinimum == null ? sourceFontPx : Math.min(edgeMinimum, sourceFontPx);
+          } else if (primary || text.closest(&#39;[data-node-id]&#39;)) {
+            nodeMinimum = nodeMinimum == null ? sourceFontPx : Math.min(nodeMinimum, sourceFontPx);
           }
         });
-        return sourceMinimum != null
-          ? Math.min(1, requestedMinimumText / sourceMinimum)
-          : 1;
+        var edgeTarget = measuredHeightFit &amp;&amp; ratio &gt;= WIDE_RATIO &amp;&amp; Number.isFinite(declaredMinimumText)
+          ? requestedMinimumText
+          : MIN_PROJECTED_NODE_TEXT_PX;
+        var scale = 0;
+        if (nodeMinimum != null) scale = Math.max(scale, requestedMinimumText / nodeMinimum);
+        if (edgeMinimum != null) scale = Math.max(scale, edgeTarget / edgeMinimum);
+        return scale &gt; 0 ? Math.min(1, scale) : 1;
       }
       var sourcePrimary = null;
       if (svg) Array.from(svg.querySelectorAll(&#39;text[data-node-label]&#39;)).forEach(function (text) {
@@ -28205,24 +28215,34 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         var style = window.getComputedStyle(element);
         return element.getBoundingClientRect().height + number(style.marginTop) + number(style.marginBottom);
       }
+      // Smallest scale that keeps node text at the requested floor and
+      // context relationship labels readable. A declared wide reader holds
+      // relationship labels to the requested floor too; every other reader
+      // still keeps them at the 6px hard floor the browser gate enforces, so
+      // a first-screen fit can never push them below it.
       function minimumReadableScale() {
-        var sourceMinimum = null;
-        var selectors = [
-          &#39;text[data-node-label], text[data-boundary-label], text[data-detail=&quot;context&quot;]&#39;
-        ];
-        if (measuredHeightFit &amp;&amp; ratio &gt;= WIDE_RATIO &amp;&amp; Number.isFinite(declaredMinimumText)) {
-          selectors.push(&#39;g[data-detail=&quot;context&quot;][data-edge-from][data-edge-to] &gt; text&#39;);
-        }
-        Array.from(svg.querySelectorAll(selectors.join(&#39;, &#39;))).forEach(function (text) {
-          if (text.getAttribute(&#39;data-detail&#39;) === &#39;context&#39; &amp;&amp; !text.closest(&#39;[data-node-id]&#39;)) return;
+        var nodeMinimum = null;
+        var edgeMinimum = null;
+        var selectors = &#39;text[data-node-label], text[data-boundary-label], text[data-detail=&quot;context&quot;], g[data-detail=&quot;context&quot;] text&#39;;
+        Array.from(svg.querySelectorAll(selectors)).forEach(function (text) {
+          if (text.getAttribute(&#39;data-detail&#39;) === &#39;fine&#39; || text.closest(&#39;[data-detail=&quot;fine&quot;]&#39;)) return;
           var sourceFontPx = parseFloat(text.getAttribute(&#39;font-size&#39;) || &#39;&#39;);
-          if (Number.isFinite(sourceFontPx)) {
-            sourceMinimum = sourceMinimum == null ? sourceFontPx : Math.min(sourceMinimum, sourceFontPx);
+          if (!Number.isFinite(sourceFontPx)) return;
+          var primary = text.hasAttribute(&#39;data-node-label&#39;) || text.hasAttribute(&#39;data-boundary-label&#39;);
+          var context = text.getAttribute(&#39;data-detail&#39;) === &#39;context&#39; || Boolean(text.closest(&#39;g[data-detail=&quot;context&quot;]&#39;));
+          if (!primary &amp;&amp; context &amp;&amp; text.closest(&#39;[data-edge-from][data-edge-to]&#39;)) {
+            edgeMinimum = edgeMinimum == null ? sourceFontPx : Math.min(edgeMinimum, sourceFontPx);
+          } else if (primary || text.closest(&#39;[data-node-id]&#39;)) {
+            nodeMinimum = nodeMinimum == null ? sourceFontPx : Math.min(nodeMinimum, sourceFontPx);
           }
         });
-        return sourceMinimum != null
-          ? Math.min(1, requestedMinimumText / sourceMinimum)
-          : 1;
+        var edgeTarget = measuredHeightFit &amp;&amp; ratio &gt;= WIDE_RATIO &amp;&amp; Number.isFinite(declaredMinimumText)
+          ? requestedMinimumText
+          : MIN_PROJECTED_NODE_TEXT_PX;
+        var scale = 0;
+        if (nodeMinimum != null) scale = Math.max(scale, requestedMinimumText / nodeMinimum);
+        if (edgeMinimum != null) scale = Math.max(scale, edgeTarget / edgeMinimum);
+        return scale &gt; 0 ? Math.min(1, scale) : 1;
       }
       var sourcePrimary = null;
       if (svg) Array.from(svg.querySelectorAll(&#39;text[data-node-label]&#39;)).forEach(function (text) {

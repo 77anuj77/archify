@@ -119,3 +119,45 @@ test('a narrow tall architecture fits the first screen without enlarging the oth
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('a first-screen fit never pushes relationship labels below the 6px floor', async (t) => {
+  if (!Object.hasOwn(process.env, 'ARCHIFY_CHROME')) return t.skip('Set ARCHIFY_CHROME for real browser checks');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-edge-floor-'));
+  const input = path.join(dir, 'input.json');
+  const output = path.join(dir, 'output.html');
+  // Titles only, 8px relationship labels: without the edge floor the titles'
+  // 7.5px target alone would project the labels to about 5.5px.
+  fs.writeFileSync(input, JSON.stringify({
+    schema_version: 1, diagram_type: 'architecture',
+    meta: { title: 'Tall request path', output: 'output.html', quality_profile: 'showcase' },
+    components: [
+      { id: 'client', type: 'frontend', label: 'Client', pos: [40, 40], size: [140, 60] },
+      { id: 'api', type: 'backend', label: 'API', pos: [40, 480], size: [140, 60] },
+      { id: 'db', type: 'database', label: 'Store', pos: [40, 920], size: [140, 60] },
+    ],
+    connections: [{ from: 'client', to: 'api', label: 'request' }, { from: 'api', to: 'db', label: 'persist' }],
+  }));
+  execFileSync(process.execPath, [path.join(root, 'bin/archify.mjs'), 'render', 'architecture', input, output]);
+  const browser = new ChromeVisualBrowser(findChrome());
+  try {
+    await browser.inspect({ artifactPath: output, width: 1440, height: 900, theme: 'light' });
+    const session = await browser.sessionPromise;
+    const result = await browser.cdp.send('Runtime.evaluate', { returnByValue: true, expression: `(() => {
+      const svg = document.querySelector('.diagram-container > svg');
+      const scale = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+      return {
+        edges: [...svg.querySelectorAll('g[data-detail="context"][data-edge-from] text')].map(text => Number(text.getAttribute('font-size')) * scale),
+        overflow: document.documentElement.getAttribute('data-reader-overflow'),
+      };
+    })()` }, session);
+    assert.equal(result.exceptionDetails, undefined);
+    const { edges, overflow } = result.result.value;
+    assert.ok(edges.length === 2, JSON.stringify(edges));
+    assert.ok(edges.every(size => size >= 6), JSON.stringify(edges));
+    // This graph is taller than the floor allows, so it scrolls as authored.
+    assert.equal(overflow, 'authored');
+  } finally {
+    await browser.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

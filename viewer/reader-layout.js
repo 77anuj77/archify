@@ -71,24 +71,34 @@
         var style = window.getComputedStyle(element);
         return element.getBoundingClientRect().height + number(style.marginTop) + number(style.marginBottom);
       }
+      // Smallest scale that keeps node text at the requested floor and
+      // context relationship labels readable. A declared wide reader holds
+      // relationship labels to the requested floor too; every other reader
+      // still keeps them at the 6px hard floor the browser gate enforces, so
+      // a first-screen fit can never push them below it.
       function minimumReadableScale() {
-        var sourceMinimum = null;
-        var selectors = [
-          'text[data-node-label], text[data-boundary-label], text[data-detail="context"]'
-        ];
-        if (measuredHeightFit && ratio >= WIDE_RATIO && Number.isFinite(declaredMinimumText)) {
-          selectors.push('g[data-detail="context"][data-edge-from][data-edge-to] > text');
-        }
-        Array.from(svg.querySelectorAll(selectors.join(', '))).forEach(function (text) {
-          if (text.getAttribute('data-detail') === 'context' && !text.closest('[data-node-id]')) return;
+        var nodeMinimum = null;
+        var edgeMinimum = null;
+        var selectors = 'text[data-node-label], text[data-boundary-label], text[data-detail="context"], g[data-detail="context"] text';
+        Array.from(svg.querySelectorAll(selectors)).forEach(function (text) {
+          if (text.getAttribute('data-detail') === 'fine' || text.closest('[data-detail="fine"]')) return;
           var sourceFontPx = parseFloat(text.getAttribute('font-size') || '');
-          if (Number.isFinite(sourceFontPx)) {
-            sourceMinimum = sourceMinimum == null ? sourceFontPx : Math.min(sourceMinimum, sourceFontPx);
+          if (!Number.isFinite(sourceFontPx)) return;
+          var primary = text.hasAttribute('data-node-label') || text.hasAttribute('data-boundary-label');
+          var context = text.getAttribute('data-detail') === 'context' || Boolean(text.closest('g[data-detail="context"]'));
+          if (!primary && context && text.closest('[data-edge-from][data-edge-to]')) {
+            edgeMinimum = edgeMinimum == null ? sourceFontPx : Math.min(edgeMinimum, sourceFontPx);
+          } else if (primary || text.closest('[data-node-id]')) {
+            nodeMinimum = nodeMinimum == null ? sourceFontPx : Math.min(nodeMinimum, sourceFontPx);
           }
         });
-        return sourceMinimum != null
-          ? Math.min(1, requestedMinimumText / sourceMinimum)
-          : 1;
+        var edgeTarget = measuredHeightFit && ratio >= WIDE_RATIO && Number.isFinite(declaredMinimumText)
+          ? requestedMinimumText
+          : MIN_PROJECTED_NODE_TEXT_PX;
+        var scale = 0;
+        if (nodeMinimum != null) scale = Math.max(scale, requestedMinimumText / nodeMinimum);
+        if (edgeMinimum != null) scale = Math.max(scale, edgeTarget / edgeMinimum);
+        return scale > 0 ? Math.min(1, scale) : 1;
       }
       var sourcePrimary = null;
       if (svg) Array.from(svg.querySelectorAll('text[data-node-label]')).forEach(function (text) {
