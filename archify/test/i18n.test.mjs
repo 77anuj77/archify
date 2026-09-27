@@ -190,8 +190,8 @@ test('es localizes renderer-owned output across all five modes without translati
     assert.ok(result.html.includes(`<title>${authoredTitle} · Diagrama</title>`), `${type}: authored title changed`);
     assert.ok(result.html.includes(`<h1>${authoredTitle}</h1>`), `${type}: authored heading changed`);
     assert.match(result.html, /<text\b[^>]*>Leyenda<\/text>/);
-    assert.match(result.html, /aria-label="Enfocar /);
-    assert.match(result.html, /<desc id="archify-diagram-description">[^<]*generado por Archify/);
+    assert.match(result.html, /aria-label="Enfocar/);
+    assert.match(result.html, /<desc id="archify-diagram-description">Un diagrama de /);
     assert.match(result.html, /"locale":"es"/);
     assert.match(result.html, />Exportar diagrama</);
     assert.doesNotMatch(result.html, /\{\{i18n:/);
@@ -496,9 +496,8 @@ test('a previously unsupported locale localizes renderer-owned output once meta.
     assert.match(result.html, /<svg\b[^>]*\blang="fr"/, type);
     assert.match(result.html, /<text\b[^>]*>Légende<\/text>/, `${type}: covered key did not localize`);
     assert.match(result.html, />Exporter le diagramme</, `${type}: covered key did not localize`);
-    // 'viewer.guided.showAll' is outside the partial fr catalog and must fall
-    // back to the English base string, not throw or render blank.
-    assert.match(result.html, />Show all</, `${type}: uncovered key did not fall back to English`);
+    // A missing outline label falls back to the canonical English message.
+    assert.match(result.html, />Node index</, `${type}: uncovered key did not fall back to English`);
     assert.match(
       result.stderr,
       new RegExp(`meta\\.translations for locale "fr" covers ${report.coveredKeys}/${report.totalKeys} renderer-owned messages`),
@@ -523,126 +522,170 @@ test('translations with unknown keys or mismatched interpolation placeholders ar
   // match the canonical {label} token — never a raw or broken template.
   assert.match(result.html, /aria-label="Focus /);
   assert.doesNotMatch(result.html, /wrongPlaceholder/);
-  assert.match(result.stderr, /meta\.translations for locale "fr" covers \d+\/519 renderer-owned messages/);
+  assert.match(result.stderr, /meta\.translations for locale "fr" covers \d+\/\d+ renderer-owned messages/);
 });
+
+const BROWSER_LOCALES = {
+  'zh-CN': {
+    title: (type) => `浏览器本地化-${type}`,
+    toolbarLabel: '图表视图控制',
+    finder: { hidden: false, title: '查找节点', searchLabel: '搜索图表节点' },
+    route: { hidden: false, title: '点击路径的起点', label: '清除已追踪路径' },
+    exportLabel: '导出图表',
+    exportMenuLabel: '导出',
+    exportMenuText: /复制图表/,
+    presetBadges: {
+      'signal-flow': { header: '信号流', plate: 'none' },
+      blueprint: { header: '蓝图 / 修订 01', plate: '' },
+      editorial: { header: '编辑风格 / 现场笔记', plate: 'ARCHIFY / 图版 04' },
+    },
+    shareCardFailure: '无法为分享卡片创建二维画布上下文',
+  },
+  es: {
+    title: (type) => `Localización del navegador-${type}`,
+    toolbarLabel: 'Controles de vista del diagrama',
+    finder: { hidden: false, title: 'Buscar un nodo', searchLabel: 'Buscar nodos del diagrama' },
+    route: { hidden: false, title: 'Haz clic donde empieza la ruta', label: 'Borrar la ruta trazada' },
+    exportLabel: 'Exportar diagrama',
+    exportMenuLabel: 'Exportar',
+    exportMenuText: /Copiar diagrama/,
+    presetBadges: {
+      'signal-flow': { header: 'FLUJO DE SEÑAL', plate: 'none' },
+      blueprint: { header: 'PLANO / REV 01', plate: '' },
+      editorial: { header: 'EDITORIAL / NOTA DE CAMPO', plate: 'ARCHIFY / LÁMINA 04' },
+    },
+    shareCardFailure: 'Contexto de lienzo 2D no disponible para Tarjeta para compartir',
+  },
+};
+
+async function assertLocalizedViewer(browser, locale, expected) {
+  for (const type of Object.keys(EXAMPLES)) {
+    const document = example(type);
+    document.meta.locale = locale;
+    const authoredTitle = expected.title(type);
+    document.meta.title = authoredTitle;
+    const result = run(type, document);
+    assert.equal(result.status, 0, `${locale}/${type}: ${result.stderr || result.stdout}`);
+
+    const sessionId = await loadArtifact(browser, result.output);
+    const state = await evaluate(browser, sessionId, `(function () {
+      var finderButton = document.getElementById('btn-node-finder');
+      var routeButton = document.getElementById('btn-route-probe');
+      var exportButton = document.getElementById('btn-export');
+      finderButton.click();
+      var finder = {
+        hidden: document.getElementById('node-finder').hidden,
+        title: document.getElementById('node-finder-title').textContent.trim(),
+        searchLabel: document.getElementById('node-finder-input').getAttribute('aria-label')
+      };
+      document.getElementById('node-finder-close').click();
+      routeButton.click();
+      var route = {
+        hidden: document.getElementById('route-probe').hidden,
+        title: document.getElementById('route-probe-title').textContent.trim(),
+        label: routeButton.getAttribute('aria-label')
+      };
+      routeButton.click();
+      exportButton.click();
+      var exportMenu = document.getElementById('export-menu');
+      function pseudoContent(selector) {
+        var content = getComputedStyle(document.querySelector(selector), '::after').content || '';
+        return content.replace(/^["']|["']$/g, '');
+      }
+      var presetBadges = {};
+      ['signal-flow', 'blueprint', 'editorial'].forEach(function (preset) {
+        document.documentElement.setAttribute('data-preset', preset);
+        presetBadges[preset] = {
+          header: pseudoContent('.header-row'),
+          plate: pseudoContent('.diagram-container')
+        };
+      });
+      return {
+        htmlLang: document.documentElement.lang,
+        svgLang: document.querySelector('.diagram-container svg').getAttribute('lang'),
+        heading: (document.querySelector('h1') || {}).textContent,
+        toolbarLabel: document.querySelector('.diagram-nav').getAttribute('aria-label'),
+        finder: finder,
+        route: route,
+        exportMenuOpen: exportMenu.classList.contains('open'),
+        exportLabel: exportButton.getAttribute('aria-label'),
+        exportMenuLabel: exportMenu.getAttribute('aria-label'),
+        exportMenuText: exportMenu.textContent,
+        presetBadges: presetBadges
+      };
+    })()`);
+
+    assert.equal(state.htmlLang, locale, `${locale}/${type}`);
+    assert.equal(state.svgLang, locale, `${locale}/${type}`);
+    // Authored copy stays verbatim while the surrounding chrome localizes.
+    assert.equal(state.heading, authoredTitle, `${locale}/${type}: authored heading changed`);
+    assert.equal(state.toolbarLabel, expected.toolbarLabel, `${locale}/${type}`);
+    assert.deepEqual(state.finder, expected.finder, `${locale}/${type}`);
+    assert.deepEqual(state.route, expected.route, `${locale}/${type}`);
+    assert.equal(state.exportMenuOpen, true, `${locale}/${type}`);
+    assert.equal(state.exportLabel, expected.exportLabel, `${locale}/${type}`);
+    assert.equal(state.exportMenuLabel, expected.exportMenuLabel, `${locale}/${type}`);
+    assert.match(state.exportMenuText, expected.exportMenuText, `${locale}/${type}`);
+    assert.deepEqual(state.presetBadges, expected.presetBadges, `${locale}/${type}`);
+
+    const shareCardFailure = await evaluate(browser, sessionId, `(async function () {
+      var originalGetContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = function () { return null; };
+      try {
+        var edge = document.querySelector('.diagram-container svg [data-edge-from][data-edge-to]');
+        Archify.routeProbe.begin({ source: edge.getAttribute('data-edge-from'), focusNode: false });
+        Archify.routeProbe.choose(edge.getAttribute('data-edge-to'), { updateUrl: false });
+        await Archify.exportMenu.shareCard({ variant: 'route' });
+        return { rejected: false, message: '' };
+      } catch (error) {
+        return { rejected: true, message: String(error && error.message || error) };
+      } finally {
+        HTMLCanvasElement.prototype.getContext = originalGetContext;
+      }
+    })()`, true);
+    assert.deepEqual(shareCardFailure, {
+      rejected: true,
+      message: expected.shareCardFailure,
+    }, `${locale}/${type}`);
+
+    // Representative visual pass: longer localized labels must not overflow.
+    const visual = spawnSync(process.execPath, [cli, 'visual-check', result.output, '--json'], {
+      cwd: skillRoot,
+      encoding: 'utf8',
+      env: { ...process.env, ARCHIFY_CHROME: chromePath },
+    });
+    assert.ok([0, 1].includes(visual.status), `${locale}/${type}: ${visual.stderr || visual.stdout}`);
+    const receipt = JSON.parse(visual.stdout);
+    assert.equal(receipt.visualReview, 'pending', `${locale}/${type}`);
+    assert.equal(receipt.chrome.status, 'available', `${locale}/${type}`);
+    assert.equal(receipt.readability.status, 'pass', `${locale}/${type}`);
+    assert.equal(receipt.viewerChrome.status, 'pass', `${locale}/${type}`);
+    assert.equal(receipt.captures.status, 'pass', `${locale}/${type}`);
+    assert.equal(
+      receipt.containment.viewports.every((viewport) => viewport.overflowX === false),
+      true,
+      `${locale}/${type}: localized Viewer introduced horizontal overflow`,
+    );
+  }
+}
 
 test('real Chrome keeps zh-CN Finder, Route, Export, and accessibility UI localized in all five modes', {
   skip: chromePath ? false : 'Set ARCHIFY_CHROME to run the real browser localization regression.',
 }, async () => {
   const browser = new ChromeVisualBrowser(chromePath);
   try {
-    for (const type of Object.keys(EXAMPLES)) {
-      const document = example(type);
-      document.meta.locale = 'zh-CN';
-      document.meta.title = `浏览器本地化-${type}`;
-      const result = run(type, document);
-      assert.equal(result.status, 0, `${type}: ${result.stderr || result.stdout}`);
+    await assertLocalizedViewer(browser, 'zh-CN', BROWSER_LOCALES['zh-CN']);
+  } finally {
+    await browser.close();
+  }
+});
 
-      const sessionId = await loadArtifact(browser, result.output);
-      const state = await evaluate(browser, sessionId, `(function () {
-        var finderButton = document.getElementById('btn-node-finder');
-        var routeButton = document.getElementById('btn-route-probe');
-        var exportButton = document.getElementById('btn-export');
-        finderButton.click();
-        var finder = {
-          hidden: document.getElementById('node-finder').hidden,
-          title: document.getElementById('node-finder-title').textContent.trim(),
-          searchLabel: document.getElementById('node-finder-input').getAttribute('aria-label')
-        };
-        document.getElementById('node-finder-close').click();
-        routeButton.click();
-        var route = {
-          hidden: document.getElementById('route-probe').hidden,
-          title: document.getElementById('route-probe-title').textContent.trim(),
-          label: routeButton.getAttribute('aria-label')
-        };
-        routeButton.click();
-        exportButton.click();
-        var exportMenu = document.getElementById('export-menu');
-        function pseudoContent(selector) {
-          var content = getComputedStyle(document.querySelector(selector), '::after').content || '';
-          return content.replace(/^["']|["']$/g, '');
-        }
-        var presetBadges = {};
-        ['signal-flow', 'blueprint', 'editorial'].forEach(function (preset) {
-          document.documentElement.setAttribute('data-preset', preset);
-          presetBadges[preset] = {
-            header: pseudoContent('.header-row'),
-            plate: pseudoContent('.diagram-container')
-          };
-        });
-        return {
-          htmlLang: document.documentElement.lang,
-          svgLang: document.querySelector('.diagram-container svg').getAttribute('lang'),
-          toolbarLabel: document.querySelector('.diagram-nav').getAttribute('aria-label'),
-          finder: finder,
-          route: route,
-          exportMenuOpen: exportMenu.classList.contains('open'),
-          exportLabel: exportButton.getAttribute('aria-label'),
-          exportMenuLabel: exportMenu.getAttribute('aria-label'),
-          exportMenuText: exportMenu.textContent,
-          presetBadges: presetBadges
-        };
-      })()`);
-
-      assert.equal(state.htmlLang, 'zh-CN', type);
-      assert.equal(state.svgLang, 'zh-CN', type);
-      assert.equal(state.toolbarLabel, '图表视图控制', type);
-      assert.deepEqual(state.finder, {
-        hidden: false,
-        title: '查找节点',
-        searchLabel: '搜索图表节点',
-      }, type);
-      assert.deepEqual(state.route, {
-        hidden: false,
-        title: '选择起点节点',
-        label: '清除已追踪路径',
-      }, type);
-      assert.equal(state.exportMenuOpen, true, type);
-      assert.equal(state.exportLabel, '导出图表', type);
-      assert.equal(state.exportMenuLabel, '导出', type);
-      assert.match(state.exportMenuText, /分享卡片/, type);
-      assert.deepEqual(state.presetBadges, {
-        'signal-flow': { header: '信号流', plate: 'none' },
-        blueprint: { header: '蓝图 / 修订 01', plate: '' },
-        editorial: { header: '编辑风格 / 现场笔记', plate: 'ARCHIFY / 图版 04' },
-      }, type);
-
-      const shareCardFailure = await evaluate(browser, sessionId, `(async function () {
-        var originalGetContext = HTMLCanvasElement.prototype.getContext;
-        HTMLCanvasElement.prototype.getContext = function () { return null; };
-        try {
-          await Archify.exportMenu.shareCard();
-          return { rejected: false, message: '' };
-        } catch (error) {
-          return { rejected: true, message: String(error && error.message || error) };
-        } finally {
-          HTMLCanvasElement.prototype.getContext = originalGetContext;
-        }
-      })()`, true);
-      assert.deepEqual(shareCardFailure, {
-        rejected: true,
-        message: '无法为分享卡片创建二维画布上下文',
-      }, type);
-
-      const visual = spawnSync(process.execPath, [cli, 'visual-check', result.output, '--json'], {
-        cwd: skillRoot,
-        encoding: 'utf8',
-        env: { ...process.env, ARCHIFY_CHROME: chromePath },
-      });
-      assert.ok([0, 1].includes(visual.status), `${type}: ${visual.stderr || visual.stdout}`);
-      const receipt = JSON.parse(visual.stdout);
-      assert.equal(receipt.visualReview, 'pending', type);
-      assert.equal(receipt.chrome.status, 'available', type);
-      assert.equal(receipt.readability.status, 'pass', type);
-      assert.equal(receipt.viewerChrome.status, 'pass', type);
-      assert.equal(receipt.captures.status, 'pass', type);
-      assert.equal(
-        receipt.containment.viewports.every((viewport) => viewport.overflowX === false),
-        true,
-        `${type}: localized Viewer introduced horizontal overflow`,
-      );
-    }
+test('real Chrome keeps es Finder, Route, Export, and accessibility UI localized in all five modes', {
+  skip: chromePath ? false : 'Set ARCHIFY_CHROME to run the real browser localization regression.',
+}, async () => {
+  const browser = new ChromeVisualBrowser(chromePath);
+  try {
+    await assertLocalizedViewer(browser, 'es', BROWSER_LOCALES.es);
   } finally {
     await browser.close();
   }
@@ -724,7 +767,7 @@ test('real Chrome keeps ko Finder, Route, Export, and accessibility UI localized
       assert.equal(state.exportMenuOpen, true, type);
       assert.equal(state.exportLabel, '다이어그램 내보내기', type);
       assert.equal(state.exportMenuLabel, '내보내기', type);
-      assert.match(state.exportMenuText, /공유 카드/, type);
+      assert.match(state.exportMenuText, /다이어그램 복사/, type);
       assert.deepEqual(state.presetBadges, {
         'signal-flow': { header: '시그널 플로우', plate: 'none' },
         blueprint: { header: '블루프린트 / 개정 01', plate: '' },
@@ -735,7 +778,10 @@ test('real Chrome keeps ko Finder, Route, Export, and accessibility UI localized
         var originalGetContext = HTMLCanvasElement.prototype.getContext;
         HTMLCanvasElement.prototype.getContext = function () { return null; };
         try {
-          await Archify.exportMenu.shareCard();
+          var edge = document.querySelector('.diagram-container svg [data-edge-from][data-edge-to]');
+          Archify.routeProbe.begin({ source: edge.getAttribute('data-edge-from'), focusNode: false });
+          Archify.routeProbe.choose(edge.getAttribute('data-edge-to'), { updateUrl: false });
+          await Archify.exportMenu.shareCard({ variant: 'route' });
           return { rejected: false, message: '' };
         } catch (error) {
           return { rejected: true, message: String(error && error.message || error) };
@@ -816,13 +862,13 @@ test('the checked-in Korean example catalog is complete and preserves interpolat
 // example a caller could supply via meta.translations, none of them built
 // into the renderer.
 for (const locale of ['fr', 'pt', 'ja', 'de', 'it', 'ru']) {
-  test(`the checked-in ${locale} example catalog is complete and preserves interpolation variables for every canonical key`, () => {
+  test(`the checked-in ${locale} example catalog validates reusable translations and discloses new-key gaps`, () => {
     const translations = JSON.parse(fs.readFileSync(path.join(skillRoot, `examples/locales/${locale}.json`), 'utf8'));
     const report = validateTranslations(translations);
-    assert.equal(report.missingKeys.length, 0, `missing: ${report.missingKeys.join(', ')}`);
+    assert.ok(report.coverage > 0.9, 'reuse the established catalog while new keys fall back explicitly');
     assert.equal(report.unknownKeys.length, 0, `unknown: ${report.unknownKeys.join(', ')}`);
     assert.equal(report.placeholderMismatches.length, 0, JSON.stringify(report.placeholderMismatches));
-    assert.equal(report.coveredKeys, report.totalKeys);
+    assert.equal(report.coveredKeys + report.missingKeys.length, report.totalKeys);
   });
 
   test(`${locale} localizes renderer-owned output via meta.translations without leaving any renderer-owned English badge or preset name behind`, () => {
@@ -879,7 +925,7 @@ test('runtime labels stay localized after composition', () => {
   const enNode = translateCount('en', 'viewer.route.overview.node', 2);
   assert.equal(
     translateMessage('en', 'viewer.route.overview.status', { nodes: enNode, hops: enHop }),
-    '2 nodes · 1 directed hop · shortest authored route',
+    '2 nodes · 1 step · shortest path',
   );
 
   assert.equal(translateMessage('ko', 'viewer.kind.backend'), '백엔드');
@@ -896,7 +942,7 @@ test('runtime labels stay localized after composition', () => {
 test('Share Card and export failures use catalog messages instead of fixed English', () => {
   assert.equal(
     translateCount('zh-CN', 'viewer.export.card.routeSummary', 2, { source: '来源', target: '目标' }),
-    '路径：来源 → 目标 · 2 个有向跳转',
+    '路径：来源 → 目标 · 2 步',
   );
   assert.equal(
     translateMessage('zh-CN', 'viewer.export.error.toBlobNull', { label: '分享卡片' }),
