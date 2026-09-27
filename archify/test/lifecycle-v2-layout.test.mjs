@@ -181,6 +181,44 @@ test('v2 grid routes are orthogonal and reciprocal pairs run as parallel lines',
   assert.notEqual(routes.drop[0][0], routes.rejoin[0][0]);
 });
 
+for (const [name, sides] of [
+  ['both', { fromSide: 'right', toSide: 'left' }],
+  ['source-only', { fromSide: 'right' }],
+  ['target-only', { toSide: 'left' }],
+]) {
+  test(`v2 compatible side pins preserve grid routes and parallel pairs: ${name}`, () => {
+    const doc = v2SessionDocument();
+    const automatic = render(`compatible-${name}-automatic`, doc);
+    assert.equal(automatic.code, 0, automatic.stderr);
+    Object.assign(doc.transitions.find(transition => transition.id === 'pause'), sides);
+    const pinned = render(`compatible-${name}-pinned`, doc);
+    assert.equal(pinned.code, 0, pinned.stderr);
+    const svg = svgOf(pinned.output);
+    const routes = Object.fromEntries([...svg.matchAll(/data-edge-id="([^"]+)"[^>]*data-composition-points="([^"]+)"/g)]
+      .map(match => [match[1], match[2].split(';').map(point => point.split(',').map(Number))]));
+    for (const id of ['pause', 'resume', 'drop', 'rejoin']) assert.equal(routes[id].length, 2, `${id} stays straight`);
+    assert.notEqual(routes.pause[0][1], routes.resume[0][1], 'horizontal reciprocal routes stay separate');
+    assert.notEqual(routes.drop[0][0], routes.rejoin[0][0], 'vertical reciprocal routes stay separate');
+    assert.equal(svg, svgOf(automatic.output), 'compatible pins preserve all routes, labels, and row gaps');
+    const result = validate(`compatible-${name}`, doc);
+    assert.equal(result.code, 0, result.stdout || result.stderr);
+  });
+}
+
+test('v2 deployment example keeps its grid layout with a compatible cross-row pin', () => {
+  const doc = JSON.parse(fs.readFileSync(path.join(skillRoot, 'examples/deployment-release.lifecycle.json'), 'utf8'));
+  const automatic = render('deployment-automatic', doc);
+  assert.equal(automatic.code, 0, automatic.stderr);
+  Object.assign(doc.transitions.find(transition => transition.from === 'ready' && transition.to === 'rollback'), {
+    fromSide: 'bottom', toSide: 'top',
+  });
+  const pinned = render('deployment-compatible', doc);
+  assert.equal(pinned.code, 0, pinned.stderr);
+  assert.equal(svgOf(pinned.output), svgOf(automatic.output), 'a redundant pin must not change the diagram');
+  const result = validate('deployment-compatible', doc);
+  assert.equal(result.code, 0, result.stdout || result.stderr);
+});
+
 for (const [name, lane, sides] of [
   ['same-row-bottom', 'main', { fromSide: 'bottom', toSide: 'bottom' }],
   ['cross-row-right', 'wait', { fromSide: 'right', toSide: 'right' }],
