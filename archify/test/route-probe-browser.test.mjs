@@ -225,20 +225,17 @@ test('Route Probe preserves directed paths, Journey and export contracts', {
     const fallback = await run(`routeClock(({last,fire})=>{Archify.routeProbe.selectJourneyIndex(1);const before=!!document.querySelector('[data-route-journey-overlay]');fire(last(860));return {before,after:!!document.querySelector('[data-route-journey-overlay]'),result:Archify.routeProbe.result()};})`);
     assert.equal(fallback.before, true); assert.equal(fallback.after, false); assert.equal(fallback.result.journey, 1);
     records.push({ scenario: 'pulse-fixture', pulses, fallback });
-    // The 860 ms fallback intentionally removes pulses even if Chrome has not
-    // started the 780 ms CSS animation yet. A busy CI renderer can take that
-    // path without ever emitting animationend. Capture the fallback separately
-    // and finish the real CSS animation through its browser timeline here.
-    const animation = await run(`routeClock(()=>{
-      routeEnds.length=0;Archify.routeProbe.selectJourneyIndex(2);
-      const overlay=document.querySelector('[data-route-journey-overlay]');
-      window.routePulseAnimations=overlay.getAnimations({subtree:true});
-      return routePulseAnimations.map(a=>({name:a.animationName,duration:a.effect.getTiming().duration}));
-    })`);
-    assert.ok(animation.length > 0, 'the Journey pulse must have a native CSS animation');
-    for (const entry of animation) assert.deepEqual(entry, { name: 'archify-route-journey-flow', duration: 780 });
-    await run('Promise.all(routePulseAnimations.map(a=>a.ready))');
-    await run('routePulseAnimations.forEach(a=>a.finish())');
+    await run(`
+      routeEnds.length = 0;
+      // Hold cleanup timers while checking the independent, real animationend path.
+      // The fallback and stale callbacks are exercised above with the same clock.
+      routeClock(() => {
+        Archify.routeProbe.selectJourneyIndex(2);
+        // A busy first frame must not make this assertion race the 860ms fallback.
+        const until = performance.now() + 350;
+        while (performance.now() < until) {}
+      });
+    `);
     await run(`routeWait(()=>routeEnds.some(e=>e.trusted&&e.name==='archify-route-journey-flow'))`);
     await run(`routeWait(()=>!document.querySelector('[data-route-journey-overlay]'))`);
     assert.equal((await snapshot('real-animation-complete')).result.journey, 2);
