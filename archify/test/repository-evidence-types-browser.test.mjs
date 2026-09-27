@@ -37,6 +37,10 @@ test('non-architecture sources reach real Viewer beacons, Focus and Finder', {
       label: 'API', sublabel: 'source data', tag: undefined, step: undefined,
       width: 92, height: 52, brand: 'github',
     }],
+    ['lifecycle', 'states', 'agent-run.lifecycle.json', false, 'dark', {
+      label: 'Awaiting', sublabel: 'source data', tag: 'waiting', step: undefined,
+      width: 126, height: 58, brand: 'github',
+    }, 'approval'],
     ['lifecycle', 'states', 'deployment-release.lifecycle.json', false, 'dark', {
       label: 'Offline mode', sublabel: 'source data', tag: 'waiting', step: undefined, brand: 'github',
     }],
@@ -44,11 +48,11 @@ test('non-architecture sources reach real Viewer beacons, Focus and Finder', {
       label: '等待人工审批确认', sublabel: '来源已核验', tag: '等待中', step: '02',
     }],
   ];
-  for (const [type, collection, example, local, theme, extra = {}] of cases) {
+  for (const [type, collection, example, local, theme, extra = {}, nodeId] of cases) {
     const url = local ? 'http://git.internal/Team/repo' : 'https://github.com/example/evidence-repo';
     git('remote', 'set-url', 'origin', url);
     const diagram = JSON.parse(fs.readFileSync(path.join(root, 'examples', example), 'utf8'));
-    const node = Object.assign(diagram[collection][0], extra);
+    const node = Object.assign(nodeId ? diagram[collection].find(node => node.id === nodeId) : diagram[collection][0], extra);
     node.sources = [{ path: 'source.js', line: 1, end_line: 3 }];
     diagram.meta.repository = { url, revision, ...(local ? { link_mode: 'local-only' } : {}) };
     const input = path.join(repo, `${type}.json`), artifactPath = path.join(repo, `${type}.html`);

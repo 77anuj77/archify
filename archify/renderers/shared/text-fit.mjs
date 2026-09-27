@@ -89,7 +89,9 @@ export function nodeLabelLayout({ width, height, rows, side = 'left', brand = fa
       compactBottom = y + row.font * 0.3;
       return y;
     });
-    if (compactBottom <= height - 2) {
+    // The compact fallback may also use the otherwise reserved bottom
+    // padding; the entire descent still stays inside the fixed box.
+    if (compactBottom <= height - 0.5) {
       result.ys = compactYs;
       return result;
     }
