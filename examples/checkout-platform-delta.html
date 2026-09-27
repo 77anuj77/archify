@@ -19116,7 +19116,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       }
       function begin(options) {
         options = options || {};
-        if (html.getAttribute(&#39;data-embed&#39;) === &#39;true&#39;) return false;
+        if (html.getAttribute(&#39;data-embed&#39;) === &#39;true&#39; &amp;&amp; options.fromHash !== true) return false;
         if (Archify.semanticLens &amp;&amp; typeof Archify.semanticLens.clearPreview === &#39;function&#39;) Archify.semanticLens.clearPreview();
         if (Archify.semanticLens &amp;&amp; Archify.semanticLens.active()) {
           Archify.semanticLens.clear({ updateUrl: false, preserveView: true, closePanel: true });
@@ -19266,7 +19266,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           if (parts.length !== 2) return;
           var byId = nodesById();
           if (!byId[parts[0]] || !byId[parts[1]]) return;
-          begin({ source: parts[0], focusNode: false });
+          begin({ source: parts[0], focusNode: false, fromHash: true });
           choose(parts[1], { updateUrl: false });
         } catch (_) {}
       }
@@ -19363,6 +19363,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         }
       };
     })();
+
 
     /* ============================================================
        Semantic Lens — a counted, viewer-only legend over data-node-kind.
@@ -34816,7 +34817,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
       }
       function begin(options) {
         options = options || {};
-        if (html.getAttribute(&#39;data-embed&#39;) === &#39;true&#39;) return false;
+        if (html.getAttribute(&#39;data-embed&#39;) === &#39;true&#39; &amp;&amp; options.fromHash !== true) return false;
         if (Archify.semanticLens &amp;&amp; typeof Archify.semanticLens.clearPreview === &#39;function&#39;) Archify.semanticLens.clearPreview();
         if (Archify.semanticLens &amp;&amp; Archify.semanticLens.active()) {
           Archify.semanticLens.clear({ updateUrl: false, preserveView: true, closePanel: true });
@@ -34966,7 +34967,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           if (parts.length !== 2) return;
           var byId = nodesById();
           if (!byId[parts[0]] || !byId[parts[1]]) return;
-          begin({ source: parts[0], focusNode: false });
+          begin({ source: parts[0], focusNode: false, fromHash: true });
           choose(parts[1], { updateUrl: false });
         } catch (_) {}
       }
@@ -35063,6 +35064,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         }
       };
     })();
+
 
     /* ============================================================
        Semantic Lens — a counted, viewer-only legend over data-node-kind.
