@@ -5020,13 +5020,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="2" x="48" y="554" width="724" height="246" rx="10" class="c-lane" stroke-width="1"/>
 
         <!-- Lifelines -->
-        <path d="M 62 142 L 62 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 170 142 L 170 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 278 142 L 278 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 386 142 L 386 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 494 142 L 494 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 602 142 L 602 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 710 142 L 710 855" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 62 142 L 62 824" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 170 142 L 170 824" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 278 142 L 278 824" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 386 142 L 386 824" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 494 142 L 494 824" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 602 142 L 602 824" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 710 142 L 710 824" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
 
         <!-- Activations -->
         <rect x="165" y="174" width="10" height="98" rx="3" class="c-mask"/>
@@ -5049,7 +5049,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="client" data-composition-edge-to="api" data-composition-points="69,180;163,180" d="M 69 180 L 163 180" class="a-emphasis" data-animate="edge" style="--step:0" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
           <rect x="77" y="160" width="78" height="18" rx="3" class="c-mask"/>
-          <text x="116" y="170" class="t-backend" font-size="11" text-anchor="middle">POST /jobs</text>
+          <text x="116" y="170" class="t-edge-emphasis" font-size="11" text-anchor="middle">POST /jobs</text>
         </g>
         </g>
 
@@ -5057,7 +5057,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="api" data-composition-edge-to="queue" data-composition-points="177,222;271,222" d="M 177 222 L 271 222" class="a-emphasis" data-animate="edge" style="--step:1" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
           <rect x="181.7" y="202" width="84.6" height="18" rx="3" class="c-mask"/>
-          <text x="224" y="212" class="t-backend" font-size="11" text-anchor="middle">enqueue job</text>
+          <text x="224" y="212" class="t-edge-emphasis" font-size="11" text-anchor="middle">enqueue job</text>
         </g>
         </g>
 
@@ -5073,7 +5073,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="queue" data-composition-edge-to="worker" data-composition-points="285,326;379,326" d="M 285 326 L 379 326" class="a-emphasis" data-animate="edge" style="--step:3" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
           <rect x="302.9" y="306" width="58.199999999999996" height="18" rx="3" class="c-mask"/>
-          <text x="332" y="316" class="t-backend" font-size="11" text-anchor="middle">deliver</text>
+          <text x="332" y="316" class="t-edge-emphasis" font-size="11" text-anchor="middle">deliver</text>
         </g>
         </g>
 
@@ -5081,7 +5081,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="worker" data-composition-edge-to="provider" data-composition-points="393,368;487,368" d="M 393 368 L 487 368" class="a-default" data-animate="edge" style="--step:4" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <g data-detail="context">
           <rect x="394.4" y="348" width="91.19999999999999" height="18" rx="3" class="c-mask"/>
-          <text x="440" y="358" class="t-backend" font-size="11" text-anchor="middle">perform work</text>
+          <text x="440" y="358" class="t-muted" font-size="11" text-anchor="middle">perform work</text>
         </g>
         </g>
 
@@ -5097,7 +5097,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="worker" data-composition-edge-to="queue" data-composition-points="379,452;285,452" d="M 379 452 L 285 452" class="a-dashed" data-animate="edge" style="--step:6" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <g data-detail="context">
           <rect x="273.2" y="432" width="117.6" height="18" rx="3" class="c-mask"/>
-          <text x="332" y="442" class="t-messagebus" font-size="11" text-anchor="middle">retry if timeout</text>
+          <text x="332" y="442" class="t-edge-dashed" font-size="11" text-anchor="middle">retry if timeout</text>
         </g>
         </g>
 
@@ -5105,7 +5105,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="worker" data-composition-edge-to="store" data-composition-points="393,494;595,494" d="M 393 494 L 595 494" class="a-emphasis" data-animate="edge" style="--step:7" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
         <g data-detail="context">
           <rect x="425.3" y="474" width="137.39999999999998" height="18" rx="3" class="c-mask"/>
-          <text x="494" y="484" class="t-backend" font-size="11" text-anchor="middle">persist final state</text>
+          <text x="494" y="484" class="t-edge-emphasis" font-size="11" text-anchor="middle">persist final state</text>
         </g>
         </g>
 
@@ -5113,7 +5113,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="worker" data-composition-edge-to="notify" data-composition-points="393,566;703,566" d="M 393 566 L 703 566" class="a-dashed" data-animate="edge" style="--step:8" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <g data-detail="context">
           <rect x="499.1" y="546" width="97.8" height="18" rx="3" class="c-mask"/>
-          <text x="548" y="556" class="t-messagebus" font-size="11" text-anchor="middle">job.completed</text>
+          <text x="548" y="556" class="t-edge-dashed" font-size="11" text-anchor="middle">job.completed</text>
         </g>
         </g>
 
@@ -5121,7 +5121,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="notify" data-composition-edge-to="client" data-composition-points="703,608;69,608" d="M 703 608 L 69 608" class="a-dashed" data-animate="edge" style="--step:9" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
         <g data-detail="context">
           <rect x="333.8" y="588" width="104.39999999999999" height="18" rx="3" class="c-mask"/>
-          <text x="386" y="598" class="t-messagebus" font-size="11" text-anchor="middle">signed webhook</text>
+          <text x="386" y="598" class="t-edge-dashed" font-size="11" text-anchor="middle">signed webhook</text>
         </g>
         </g>
 
@@ -5129,7 +5129,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="client" data-composition-edge-to="api" data-composition-points="69,650;163,650" d="M 69 650 L 163 650" class="a-default" data-animate="edge" style="--step:10" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <g data-detail="context">
           <rect x="67.1" y="630" width="97.8" height="18" rx="3" class="c-mask"/>
-          <text x="116" y="640" class="t-backend" font-size="11" text-anchor="middle">GET /jobs/:id</text>
+          <text x="116" y="640" class="t-muted" font-size="11" text-anchor="middle">GET /jobs/:id</text>
         </g>
         </g>
 
@@ -5137,7 +5137,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <path data-composition-edge-from="api" data-composition-edge-to="store" data-composition-points="177,692;595,692" d="M 177 692 L 595 692" class="a-default" data-animate="edge" style="--step:11" stroke-width="1.4" marker-end="url(#arrowhead)"/>
         <g data-detail="context">
           <rect x="343.7" y="672" width="84.6" height="18" rx="3" class="c-mask"/>
-          <text x="386" y="682" class="t-backend" font-size="11" text-anchor="middle">read status</text>
+          <text x="386" y="682" class="t-muted" font-size="11" text-anchor="middle">read status</text>
         </g>
         </g>
 
@@ -5260,21 +5260,21 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         <!-- Legend -->
         <g data-legend="">
           <text x="40" y="846" class="t-primary" font-size="12" font-weight="650">Legend</text>
-          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="866" data-legend-width="78">
+          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="866" data-legend-width="103">
             <path d="M 40 863 L 74 863" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-            <text x="83" y="866" class="t-muted" font-size="10" font-weight="500">request</text>
+            <text x="83" y="866" class="t-muted" font-size="10" font-weight="500">main request</text>
           </g>
-          <g data-legend-semantic-kind="return" data-legend-x="140" data-legend-baseline="866" data-legend-width="73">
-            <path d="M 140 863 L 174 863" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
-            <text x="183" y="866" class="t-muted" font-size="10" font-weight="500">return</text>
+          <g data-legend-semantic-kind="return" data-legend-x="165" data-legend-baseline="866" data-legend-width="73">
+            <path d="M 165 863 L 199 863" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+            <text x="208" y="866" class="t-muted" font-size="10" font-weight="500">return</text>
           </g>
-          <g data-legend-semantic-kind="dashed" data-legend-x="235" data-legend-baseline="866" data-legend-width="98">
-            <path d="M 235 863 L 269 863" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
-            <text x="278" y="866" class="t-muted" font-size="10" font-weight="500">async trace</text>
+          <g data-legend-semantic-kind="dashed" data-legend-x="260" data-legend-baseline="866" data-legend-width="98">
+            <path d="M 260 863 L 294 863" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+            <text x="303" y="866" class="t-muted" font-size="10" font-weight="500">async trace</text>
           </g>
-          <g data-legend-semantic-kind="default" data-legend-x="355" data-legend-baseline="866" data-legend-width="118">
-            <path d="M 355 863 L 389 863" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-            <text x="398" y="866" class="t-muted" font-size="10" font-weight="500">default message</text>
+          <g data-legend-semantic-kind="default" data-legend-x="380" data-legend-baseline="866" data-legend-width="78">
+            <path d="M 380 863 L 414 863" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="423" y="866" class="t-muted" font-size="10" font-weight="500">message</text>
           </g>
         </g>
       </svg>
