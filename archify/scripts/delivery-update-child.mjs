@@ -17,6 +17,8 @@ const result = await checkForUpdate({
     ? { releasePath: process.env.ARCHIFY_UPDATE_RELEASE_PATH } : {}),
   ...(process.env.ARCHIFY_UPDATE_CACHE_DIRECTORY
     ? { cacheDirectory: process.env.ARCHIFY_UPDATE_CACHE_DIRECTORY } : {}),
-  timeoutMs: 850,
+  // Leave time to record a failed fetch, so a slow network backs off instead
+  // of being killed before its result reaches the cache.
+  timeoutMs: Math.max(1, Math.floor(remainingMs - 150)),
 });
 process.stdout.write(`${JSON.stringify(result)}\n`);

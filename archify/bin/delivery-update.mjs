@@ -29,7 +29,7 @@ function normalize(result) {
       ? result.checkedAt
         ? `A previous check at ${result.checkedAt} found a newer release.`
         : 'A previous check found a newer release; its check time is unknown.'
-      : 'A newer release is available.'} Release notes: ${result.releaseNotes}. The installed Skill has not changed.`
+      : 'A newer release is available.'} Release notes: ${result.releaseNotes}. The installed Skill has not changed; ask to snooze or ignore this reminder.`
     : null;
   return {
     status: 'update_available',

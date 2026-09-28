@@ -19,6 +19,7 @@ import {
 import { startDeliveryUpdateCheck } from './delivery-update.mjs';
 
 export const FINALIZE_STAGES = Object.freeze(['validate', 'deliver', 'check', 'browser-check']);
+const FINALIZE_UPDATE_DEADLINE_MS = 4_000;
 
 function sha256(buffer) {
   return createHash('sha256').update(buffer).digest('hex');
@@ -693,7 +694,9 @@ export async function runFinalize({
     summaryCapture = writeJsonAtomic(resolvedSummary, compactFinalizeReceipt(receipt), summaryCapture, assertReceiptPaths);
   };
   persistReceipts();
-  const updateCheck = startUpdateCheck({ env });
+  // The gates below usually take seconds, so a slower network can finish the
+  // update check in parallel instead of timing out on every delivery.
+  const updateCheck = startUpdateCheck({ env, deadlineMs: FINALIZE_UPDATE_DEADLINE_MS });
 
   // Only launch/attach the blank browser here. The normal browser gate still
   // verifies current delivery provenance before it consumes this one-shot factory.

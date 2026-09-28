@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { checkForUpdate } from '../scripts/check-update.mjs';
 import { startDeliveryUpdateCheck } from '../bin/delivery-update.mjs';
@@ -65,6 +65,7 @@ test('bounded service returns the same cached notice on repeated deliveries', as
     assert.equal(result.source, 'cache');
     assert.equal(result.noticeRequired, true);
     assert.match(result.noticeText, /previous check/);
+    assert.match(result.noticeText, /ask to snooze or ignore this reminder/);
     assert.ok(performance.now() - started < 1_200);
   }
 });
@@ -81,6 +82,24 @@ test('service deadline kills a blocked child and leaves no later result', async 
   assert.equal(result.status, 'unavailable');
   assert.equal(result.reason, 'timeout');
   assert.deepEqual(fs.readdirSync(root).sort(), ['blocker.mjs', 'skill-release.json']);
+});
+
+test('a slow network records its failed check before the deadline and backs off', async (t) => {
+  const testFixture = fixture(t);
+  const calls = path.join(testFixture.root, 'fetch-calls');
+  const preload = path.join(testFixture.root, 'slow-fetch.mjs');
+  fs.writeFileSync(preload, `import fs from 'node:fs';
+globalThis.fetch = (_url, { signal }) => {
+  fs.appendFileSync(${JSON.stringify(calls)}, 'x');
+  return new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(signal.reason)));
+};
+`);
+  const slowEnv = { ...env(testFixture), NODE_OPTIONS: `--import=${pathToFileURL(preload).href}` };
+  const first = await startDeliveryUpdateCheck({ env: slowEnv, deadlineMs: 600 });
+  assert.equal(first.reason, 'check-failed');
+  const second = await startDeliveryUpdateCheck({ env: slowEnv, deadlineMs: 600 });
+  assert.equal(second.status, 'unavailable');
+  assert.equal(fs.readFileSync(calls, 'utf8'), 'x');
 });
 
 test('a synchronous renderer delay does not turn a completed check into a timeout', async (t) => {

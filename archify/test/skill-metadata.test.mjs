@@ -55,7 +55,8 @@ test('update awareness is notification-only and never replaces the requested wor
   assert.match(skill + updateAwareness, /`update\.noticeRequired`[\s\S]*final response/i);
   assert.match(skill + updateAwareness, /several diagrams[\s\S]*once in the final response/i);
   assert.match(skill + updateAwareness, /information, not permission/i);
-  assert.match(skill + updateAwareness, /Do not run `--ack`, `--snooze`, or `--ignore` yourself/);
+  assert.match(skill, /Snooze or ignore a reminder only when the user explicitly asks/);
+  assert.match(updateAwareness, /explicitly asks to pause or stop[\s\S]*--snooze "<eventKey>"[\s\S]*--ignore "<eventKey>"[\s\S]*Never run them on your own initiative/);
   assert.match(skill + updateAwareness, /installed Skill has not changed/i);
   assert.doesNotMatch(skill, /npx skills update|gh skill update/i);
 });
