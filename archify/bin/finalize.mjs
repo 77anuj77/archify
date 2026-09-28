@@ -585,6 +585,15 @@ export function compactFinalizeReceipt(receipt) {
       repair: 'Check whether that leading space is intentional. If not, reposition the connected scene nearer the canvas origin while retaining room for its actual boundaries, labels and return routes. Preserve all meaning and user-fixed geometry, then rerun finalize. No screenshot is required.',
     };
   }
+  const sequenceColumnSpace = receipt.stages?.check?.receipt?.composition?.sequenceColumnSpace;
+  if (receipt.ok && receipt.type === 'sequence' && sequenceColumnSpace?.reviewSuggested === true) {
+    compact.layoutReviewRecommendation = {
+      action: 'inspect-sequence-width',
+      evidence: sequenceColumnSpace,
+      reason: 'Fixed participant columns leave substantial unused space on the right, after accounting for message labels and notes. This is a layout suggestion, not a failed gate.',
+      repair: 'For a newly authored Sequence with omitted meta.column_fit and no user-fixed column geometry, set meta.column_fit to "spread" and rerun finalize once. Preserve participant order, every message, its y position, labels, notes and sources. Retain explicit fixed layouts and legacy inputs; report the suggestion instead of changing them automatically.',
+    };
+  }
   if (!receipt.ok && receipt.status === 'fail' && receipt.failedStage === 'validate') {
     compact.nextAction = {
       action: 'edit-in-place',
