@@ -2,7 +2,7 @@
 
 Read this file when a `finalize` or standalone `deliver` receipt has `update.noticeRequired: true`.
 
-Keep one compact line in the final response, in the user's language, with `installedVersion`, `availableVersion`, and the official `releaseNotes` link. Say that the installed Skill has not changed and that the user can ask to snooze or ignore the reminder. If `source` is `cache`, say that a previous check found the update; use `checkedAt` only when present, and otherwise say the check time is unknown. A process message or tool output does not replace this final line.
+Keep one compact line in the final response, in the user's language, with `installedVersion`, `availableVersion`, and the official `releaseNotes` link. Say that the installed Skill has not changed and that the user can ask to snooze or ignore the reminder. If `source` is `cache`, say that a previous check at `checkedAt` found the update. A process message or tool output does not replace this final line.
 For `severity: "security"`, label it as a security update without making installation automatic or urgent by default.
 
 You may translate the fixed local `noticeText`. Never quote, summarize, or translate the remote manifest's summary.

@@ -41,7 +41,7 @@ function manifest() {
 }
 
 async function seed(testFixture) {
-  return checkForUpdate({ ...testFixture, repeatNotice: true,
+  return checkForUpdate({ ...testFixture,
     fetchImpl: async () => new Response(JSON.stringify(manifest()), {
       status: 200, headers: { 'content-type': 'application/json' },
     }),
@@ -120,7 +120,6 @@ test('a killed checker holding the cache claim can be followed by a new check', 
     await checkForUpdate({
       releasePath: ${JSON.stringify(testFixture.releasePath)},
       cacheDirectory: ${JSON.stringify(testFixture.cacheDirectory)},
-      repeatNotice: true,
       fetchImpl: async () => {
         process.stdout.write('entered fetch\\n');
         return new Promise(() => {});

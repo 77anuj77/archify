@@ -26,9 +26,7 @@ function normalize(result) {
   const cached = result.source === 'cache';
   const noticeText = noticeRequired
     ? `Archify ${result.severity === 'security' ? 'security update' : 'update'}: ${result.installedVersion} → ${result.latestVersion}. ${cached
-      ? result.checkedAt
-        ? `A previous check at ${result.checkedAt} found a newer release.`
-        : 'A previous check found a newer release; its check time is unknown.'
+      ? `A previous check at ${result.checkedAt} found a newer release.`
       : 'A newer release is available.'} Release notes: ${result.releaseNotes}. The installed Skill has not changed; ask to snooze or ignore this reminder.`
     : null;
   return {

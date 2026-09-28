@@ -12,7 +12,6 @@ const deadlineTimer = setTimeout(() => process.kill(process.pid, 'SIGKILL'), rem
 deadlineTimer.unref();
 
 const result = await checkForUpdate({
-  repeatNotice: true,
   ...(process.env.ARCHIFY_UPDATE_RELEASE_PATH
     ? { releasePath: process.env.ARCHIFY_UPDATE_RELEASE_PATH } : {}),
   ...(process.env.ARCHIFY_UPDATE_CACHE_DIRECTORY
