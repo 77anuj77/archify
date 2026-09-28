@@ -54,7 +54,8 @@ export function startDeliveryUpdateCheck({
   return new Promise((resolve) => {
     let child;
     try {
-      child = spawn(process.execPath, [checkerPath, String(Date.now() + deadlineMs)], {
+      const deadlineNs = process.hrtime.bigint() + BigInt(Math.floor(deadlineMs * 1_000_000));
+      child = spawn(process.execPath, [checkerPath, String(deadlineNs)], {
         env,
         stdio: ['ignore', 'pipe', 'ignore'],
         windowsHide: true,
