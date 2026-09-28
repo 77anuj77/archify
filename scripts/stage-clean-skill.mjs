@@ -21,9 +21,7 @@ const REQUIRED_INPUTS = new Set([
   'archify/THIRD_PARTY_NOTICES.md',
   'archify/renderers/shared/generated-validators.mjs',
   'archify/scripts/check-update.mjs',
-  'archify/scripts/delivery-update-child.mjs',
   'archify/scripts/update-contract.mjs',
-  'archify/bin/delivery-update.mjs',
   'archify/skill-release.json',
 ]);
 const RUNTIME_DEPENDENCIES = Object.freeze([
