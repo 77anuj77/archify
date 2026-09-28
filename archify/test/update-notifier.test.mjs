@@ -12,6 +12,7 @@ import {
   acknowledgeUpdate,
   checkForUpdate,
   isMainModule,
+  setUpdatePreference,
 } from '../scripts/check-update.mjs';
 import { DEFAULT_MANIFEST_URL, compareSemver, parseSemver } from '../scripts/update-contract.mjs';
 
@@ -2416,7 +2417,7 @@ test('a fenced owner rechecks its active claim immediately before network access
     return new Promise((resolve) => { releaseFetch = resolve; });
   };
 
-  const delayedOwner = checkForUpdate(options(testFixture, fetchImpl));
+  const delayedOwner = checkForUpdate(options(testFixture, fetchImpl, { timeoutMs: 2_000 }));
   await pause.reached;
   const staleTime = new Date(Date.now() - 60_000);
   fs.utimesSync(
@@ -2424,7 +2425,7 @@ test('a fenced owner rechecks its active claim immediately before network access
     staleTime,
     staleTime,
   );
-  const successor = checkForUpdate(options(testFixture, fetchImpl));
+  const successor = checkForUpdate(options(testFixture, fetchImpl, { timeoutMs: 2_000 }));
   await fetchStarted;
   assert.equal(requests, 1);
 
@@ -3400,7 +3401,7 @@ test('disabled CLI returns one silent JSON line and never needs the network', ()
   assert.equal(result.stdout.trim().split('\n').length, 1);
 });
 
-test('CLI acknowledgement emits the documented one-line success schema', async (t) => {
+test('legacy CLI acknowledgement is a harmless one-line no-op', async (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'archify-update-cli-ack-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const home = path.join(root, 'home');
@@ -3439,8 +3440,7 @@ test('CLI acknowledgement emits the documented one-line success schema', async (
   });
   assert.equal(acknowledgement.status, 0, acknowledgement.stderr);
   assert.deepEqual(JSON.parse(acknowledgement.stdout), {
-    status: 'acknowledged',
-    eventKey: offered.eventKey,
+    status: 'silent', reason: 'legacy-ack-no-op',
   });
   assert.equal(acknowledgement.stdout.trim().split('\n').length, 1);
 });
@@ -3489,4 +3489,133 @@ test('notifier source has no process execution or remote-origin override surface
     'XDG_CACHE_HOME',
   ]);
   assert.doesNotMatch(combinedSource, /updateCommand/);
+});
+
+test('delivery checks repeat a cached update despite legacy acknowledgement', async (t) => {
+  const testFixture = fixture();
+  t.after(() => fs.rmSync(testFixture.root, { recursive: true, force: true }));
+  const first = await checkForUpdate(options(testFixture,
+    async () => response(remoteRelease()), { repeatNotice: true }));
+  assert.equal(first.status, 'update_available');
+  assert.equal(first.source, 'network');
+  assert.equal(first.noticeRequired, true);
+  assert.equal(first.checkedAt, new Date(baseTime).toISOString());
+  const ack = await acknowledgeUpdate({ ...testFixture, eventKey: first.eventKey });
+  assert.equal(ack.status, 'silent');
+  const second = await checkForUpdate(options(testFixture,
+    async () => { throw new Error('should use cache'); }, { repeatNotice: true }));
+  assert.equal(second.status, 'update_available');
+  assert.equal(second.source, 'cache');
+  assert.equal(second.noticeRequired, true);
+});
+
+test('delivery preferences are explicit and scoped to the exact release digest', async (t) => {
+  const testFixture = fixture();
+  t.after(() => fs.rmSync(testFixture.root, { recursive: true, force: true }));
+  const first = await checkForUpdate(options(testFixture,
+    async () => response(remoteRelease()), { repeatNotice: true }));
+  const ignored = await setUpdatePreference({ ...testFixture,
+    eventKey: first.eventKey, mode: 'ignore', now: () => baseTime });
+  assert.equal(ignored.status, 'ignored');
+  const suppressed = await checkForUpdate(options(testFixture,
+    async () => { throw new Error('should use cache'); }, { repeatNotice: true }));
+  assert.equal(suppressed.noticeRequired, false);
+  assert.equal(suppressed.reason, 'ignored');
+  const newer = await checkForUpdate(options(testFixture,
+    async () => response(remoteReleaseForVersion('2.17.0', 'c'.repeat(64))),
+    { repeatNotice: true, now: () => baseTime + 2 * 24 * 60 * 60 * 1_000 }));
+  assert.equal(newer.status, 'update_available');
+  assert.equal(newer.noticeRequired, true);
+  const snoozed = await setUpdatePreference({ ...testFixture,
+    eventKey: newer.eventKey, mode: 'snooze', now: () => baseTime + 2 * 24 * 60 * 60 * 1_000 });
+  assert.equal(snoozed.status, 'snoozed');
+  const during = await checkForUpdate(options(testFixture,
+    async () => { throw new Error('should use cache'); }, { repeatNotice: true,
+      now: () => baseTime + 3 * 24 * 60 * 60 * 1_000 }));
+  assert.equal(during.noticeRequired, false);
+  assert.equal(during.reason, 'snoozed');
+  const after = await checkForUpdate(options(testFixture,
+    async () => { throw new Error('offline'); }, { repeatNotice: true,
+      now: () => baseTime + 10 * 24 * 60 * 60 * 1_000 }));
+  assert.equal(after.noticeRequired, true);
+  assert.equal(after.source, 'cache');
+});
+
+test('delivery fallback does not invent a check time for a legacy cache', async (t) => {
+  const testFixture = fixture();
+  t.after(() => fs.rmSync(testFixture.root, { recursive: true, force: true }));
+  const legacy = await checkForUpdate(options(testFixture,
+    async () => response(remoteRelease())));
+  assert.equal(legacy.status, 'update_available');
+  const next = await checkForUpdate(options(testFixture,
+    async () => { throw new Error('offline'); }, { repeatNotice: true }));
+  assert.equal(next.status, 'update_available');
+  assert.equal(next.source, 'cache');
+  assert.equal(next.checkedAt, null);
+});
+
+test('delivery check treats a withdrawn manifest differently from an invalid response', async (t) => {
+  const testFixture = fixture();
+  t.after(() => fs.rmSync(testFixture.root, { recursive: true, force: true }));
+  await checkForUpdate(options(testFixture,
+    async () => response(remoteRelease()), { repeatNotice: true }));
+  const invalid = await checkForUpdate(options(testFixture,
+    async () => response('invalid JSON'), { repeatNotice: true,
+      now: () => baseTime + 2 * 24 * 60 * 60 * 1_000 }));
+  assert.equal(invalid.status, 'update_available');
+  assert.equal(invalid.source, 'cache');
+  const withdrawn = await checkForUpdate(options(testFixture,
+    async () => response('{}', { status: 404 }), { repeatNotice: true,
+      now: () => baseTime + 3 * 24 * 60 * 60 * 1_000 }));
+  assert.deepEqual(withdrawn, { status: 'silent', reason: 'withdrawn' });
+  const cached = await checkForUpdate(options(testFixture,
+    async () => { throw new Error('backoff'); }, { repeatNotice: true,
+      now: () => baseTime + 3 * 24 * 60 * 60 * 1_000 + 1_000 }));
+  assert.notEqual(cached.status, 'update_available');
+});
+
+test('a validated network result survives a cache publication failure without inventing an upgrade', async (t) => {
+  const testFixture = fixture();
+  t.after(() => fs.rmSync(testFixture.root, { recursive: true, force: true }));
+  const originalRename = fsPromises.rename;
+  fsPromises.rename = async (source, destination, ...args) => {
+    if (destination.endsWith('state.json')) throw Object.assign(new Error('read-only state'), { code: 'EACCES' });
+    return originalRename(source, destination, ...args);
+  };
+  try {
+    const offered = await checkForUpdate(options(testFixture,
+      async () => response(remoteRelease()), { repeatNotice: true }));
+    assert.equal(offered.status, 'update_available');
+    assert.equal(offered.source, 'network');
+    const currentFixture = fixture('2.16.0');
+    t.after(() => fs.rmSync(currentFixture.root, { recursive: true, force: true }));
+    const current = await checkForUpdate(options(currentFixture,
+      async () => response(remoteRelease()), { repeatNotice: true }));
+    assert.equal(current.status, 'current');
+    assert.equal(current.noticeRequired, false);
+  } finally {
+    fsPromises.rename = originalRename;
+  }
+});
+
+test('an offline delivery still offers the last validated candidate when backoff cannot be written', async (t) => {
+  const testFixture = fixture();
+  t.after(() => fs.rmSync(testFixture.root, { recursive: true, force: true }));
+  await checkForUpdate(options(testFixture,
+    async () => response(remoteRelease()), { repeatNotice: true }));
+  const originalRename = fsPromises.rename;
+  fsPromises.rename = async (source, destination, ...args) => {
+    if (destination.endsWith('state.json')) throw Object.assign(new Error('read-only state'), { code: 'EACCES' });
+    return originalRename(source, destination, ...args);
+  };
+  try {
+    const result = await checkForUpdate(options(testFixture,
+      async () => { throw new Error('offline'); }, { repeatNotice: true,
+        now: () => baseTime + 2 * 24 * 60 * 60 * 1_000 }));
+    assert.equal(result.status, 'update_available');
+    assert.equal(result.source, 'cache');
+    assert.equal(result.noticeRequired, true);
+  } finally {
+    fsPromises.rename = originalRename;
+  }
 });

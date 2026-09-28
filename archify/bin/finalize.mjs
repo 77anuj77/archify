@@ -16,6 +16,7 @@ import {
   findChrome,
   VISUAL_CHECK_VIEWPORTS,
 } from './visual-check.mjs';
+import { startDeliveryUpdateCheck } from './delivery-update.mjs';
 
 export const FINALIZE_STAGES = Object.freeze(['validate', 'deliver', 'check', 'browser-check']);
 
@@ -550,6 +551,7 @@ export function compactFinalizeReceipt(receipt) {
       truncated: allDiagnostics.length > selectedDiagnostics.length,
     },
     evidence: receipt.evidence,
+    ...(receipt.update ? { update: receipt.update } : {}),
     visualReview: receipt.visualReview || 'not-requested',
     durationMs: receipt.durationMs,
   };
@@ -623,6 +625,7 @@ export async function runFinalize({
   env = process.env,
   runCommand = defaultRunner,
   runBrowserCheck,
+  startUpdateCheck = startDeliveryUpdateCheck,
   resolveChrome = findChrome,
   createBrowser = (chromePath, options) => new ChromeVisualBrowser(chromePath, options),
 } = {}) {
@@ -690,6 +693,7 @@ export async function runFinalize({
     summaryCapture = writeJsonAtomic(resolvedSummary, compactFinalizeReceipt(receipt), summaryCapture, assertReceiptPaths);
   };
   persistReceipts();
+  const updateCheck = startUpdateCheck({ env });
 
   // Only launch/attach the blank browser here. The normal browser gate still
   // verifies current delivery provenance before it consumes this one-shot factory.
@@ -739,7 +743,8 @@ export async function runFinalize({
         });
         result = { status: checked.exitCode, stdout: JSON.stringify(checked.receipt) };
       } else {
-        result = await runCommand({ stage, cliPath, args, cwd, env });
+        result = await runCommand({ stage, cliPath, args, cwd,
+          env: stage === 'deliver' ? { ...env, ARCHIFY_UPDATE_CHECK_DISABLED: '1' } : env });
       }
       const stageReceipt = parsedReceipt(result.stdout);
       const code = result.status ?? 1;
@@ -877,9 +882,11 @@ export async function runFinalize({
       : identity(resolvedOutput);
     receipt.finishedAt = new Date().toISOString();
     receipt.durationMs = durationMs(started);
+    receipt.update = await updateCheck;
     persistReceipts();
     return { exitCode, receipt, summary: compactFinalizeReceipt(receipt) };
   } finally {
     if (browser && !browserTransferred) await browser.close();
+    await updateCheck;
   }
 }

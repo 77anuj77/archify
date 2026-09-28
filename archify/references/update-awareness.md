@@ -1,9 +1,10 @@
 # Update awareness
 
-Read this file only when `scripts/check-update.mjs` returns `update_available`.
+Read this file when a `finalize` or standalone `deliver` receipt has `update.noticeRequired: true`.
 
-Show one compact notice in the user's conversation language with the installed version, latest version, the checker's fixed local summary, and official release-notes link. When `severity` is `security`, label it as a security update with restrained emphasis; this changes emphasis only, never user autonomy. Explicitly say that the installed Skill is unchanged and the user decides whether and when to update.
+Keep one compact line in the final response, in the user's language, with `installedVersion`, `availableVersion`, and the official `releaseNotes` link. Say that the installed Skill has not changed. If `source` is `cache`, say that a previous check found the update; use `checkedAt` only when present, and otherwise say the check time is unknown. A process message or tool output does not replace this final line.
+For `severity: "security"`, label it as a security update without making installation automatic or urgent by default.
 
-You may translate the fixed local sentence. Never quote, summarize, or translate the remote manifest's summary. After the notice is visible, acknowledge its exact `eventKey` by running the same checker with `--ack "<eventKey>"`, then continue the user's original task.
+You may translate the fixed local `noticeText`. Never quote, summarize, or translate the remote manifest's summary. Do not run `--ack`, `--snooze`, or `--ignore` yourself. A user may explicitly choose `--snooze <eventKey>` (seven days by default) or `--ignore <eventKey>` (this exact release only); those commands do not install an update.
 
 The notice is information, not permission. Keep the installed version unchanged. This workflow never downloads, installs, or executes an update, and silence is never consent.

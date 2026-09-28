@@ -27,6 +27,7 @@ const ACTIVE_CLAIM_DIRECTORY = 'active-claim';
 const OPERATION_NAME = /^(reserved|pending|committed|fenced|cancelled)-(\d{1,20})$/;
 const MAX_OPERATION_GENERATION = (10n ** 20n) - 1n;
 const CHECK_TTL_MS = 72 * 60 * 60 * 1_000;
+const DELIVERY_CHECK_TTL_MS = 24 * 60 * 60 * 1_000;
 const MAX_CACHE_HORIZON_MS = Math.ceil(CHECK_TTL_MS * 1.2);
 const FIRST_FAILURE_DELAY_MS = 6 * 60 * 60 * 1_000;
 const LATER_FAILURE_DELAY_MS = 24 * 60 * 60 * 1_000;
@@ -44,9 +45,14 @@ const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const defaultReleasePath = path.resolve(scriptDirectory, '..', 'skill-release.json');
 
 class FileIdentityChangedError extends Error {}
+class ManifestWithdrawnError extends Error {}
 
 function silent(reason) {
   return { status: 'silent', reason };
+}
+
+function updatesDisabled() {
+  return process.env.ARCHIFY_UPDATE_CHECK_DISABLED === '1';
 }
 
 function isPlainObject(value) {
@@ -70,13 +76,15 @@ function validateManifest(value) {
 function validateCachedCandidate(value) {
   if (!isPlainObject(value)
     || !hasOnlyKeys(value, new Set([
-      'version', 'targetDigest', 'severity', 'releaseNotes',
+      'version', 'targetDigest', 'severity', 'releaseNotes', 'checkedAt',
     ]))) return null;
   try {
     if (!isStableCoreVersion(value.version)) return null;
     if (!DIGEST_PATTERN.test(value.targetDigest)
       || !['normal', 'security'].includes(value.severity)) return null;
     validateReleaseNotesUrl(value.releaseNotes, value.version);
+    if (value.checkedAt !== undefined && (typeof value.checkedAt !== 'string'
+      || !Number.isFinite(Date.parse(value.checkedAt)))) return null;
     return { ...value };
   } catch {
     return null;
@@ -95,6 +103,37 @@ function emptyState(installedVersion = null) {
     notification: {
       offeredDigests: [],
       acknowledgedDigests: [],
+    },
+  };
+}
+
+function validPreference(value) {
+  return isPlainObject(value)
+    && hasOnlyKeys(value, new Set(['targetDigest', 'version', 'mode', 'until']))
+    && DIGEST_PATTERN.test(value.targetDigest)
+    && isStableCoreVersion(value.version)
+    && ['ignore', 'snooze'].includes(value.mode)
+    && (value.mode === 'ignore' ? value.until === null
+      : typeof value.until === 'string' && Number.isFinite(Date.parse(value.until)));
+}
+
+function deliveryState(state) {
+  return {
+    ...state,
+    schemaVersion: 2,
+    legacyMigrated: true,
+    preferences: state.preferences || [],
+  };
+}
+
+function withMigratedCandidate(state, candidate) {
+  if (state.candidate || !candidate) return state;
+  return {
+    ...state,
+    candidate,
+    notification: {
+      ...state.notification,
+      offeredDigests: [...new Set([...state.notification.offeredDigests, candidate.targetDigest])],
     },
   };
 }
@@ -151,7 +190,7 @@ function versionCacheDirectory(cacheDirectory, installedVersion) {
 
 function normalizeState(value, installedVersion) {
   const effectiveInstalledVersion = installedVersion ?? value?.installedVersion ?? null;
-  if (!isPlainObject(value) || value.schemaVersion !== 1 || value.skillId !== SKILL_ID
+  if (!isPlainObject(value) || ![1, 2].includes(value.schemaVersion) || value.skillId !== SKILL_ID
     || (installedVersion !== null && value.installedVersion !== installedVersion)
     || (value.installedVersion !== null && typeof value.installedVersion !== 'string')
     || !isPlainObject(value.check)
@@ -182,6 +221,14 @@ function normalizeState(value, installedVersion) {
     return null;
   }
   state.notification.acknowledgedDigests = [...new Set(acknowledgedDigests)];
+  if (value.schemaVersion === 2) {
+    if (!Array.isArray(value.preferences) || value.preferences.length > 32
+      || value.preferences.some((preference) => !validPreference(preference))
+      || value.legacyMigrated !== true) return null;
+    state.schemaVersion = 2;
+    state.legacyMigrated = true;
+    state.preferences = value.preferences.map((preference) => ({ ...preference }));
+  }
   const hasCandidate = Object.hasOwn(value, 'candidate');
   const candidate = validateCachedCandidate(value.candidate);
   if (hasCandidate && !candidate) return null;
@@ -792,6 +839,19 @@ async function operationIsActive(
             { bigint: true },
           );
           if (!ownerMetadata.isFile() || ownerMetadata.isSymbolicLink()) return false;
+          try {
+            const owner = await readJsonFile(
+              path.join(operation.directory, OPERATION_OWNER_FILE),
+              MAX_CLAIM_OWNER_BYTES,
+              ownerMetadata,
+            );
+            if (Number.isSafeInteger(owner?.pid) && owner.pid > 0 && processIsGone(owner.pid)) {
+              return false;
+            }
+          } catch (error) {
+            if (error instanceof FileIdentityChangedError) throw error;
+            // A malformed owner still gets the hard lease before recovery.
+          }
           return metadataIsWithinLease(ownerMetadata);
         } catch (error) {
           if (error?.code !== 'ENOENT') throw error;
@@ -802,6 +862,15 @@ async function operationIsActive(
   } catch (error) {
     if (error?.code === 'ENOENT') return false;
     throw error;
+  }
+}
+
+function processIsGone(pid) {
+  try {
+    process.kill(pid, 0);
+    return false;
+  } catch (error) {
+    return error?.code === 'ESRCH';
   }
 }
 
@@ -1267,10 +1336,10 @@ async function commitOperation(cacheDirectory, operation, installedVersion, muta
   }
 }
 
-function nextSuccessfulCheck(nowMs, random) {
+function nextSuccessfulCheck(nowMs, random, ttlMs = CHECK_TTL_MS) {
   const boundedRandom = Math.min(1, Math.max(0, Number(random()) || 0));
   const multiplier = 0.8 + (boundedRandom * 0.4);
-  return new Date(nowMs + Math.round(CHECK_TTL_MS * multiplier)).toISOString();
+  return new Date(nowMs + Math.round(ttlMs * multiplier)).toISOString();
 }
 
 function nextFailedCheck(nowMs, failures) {
@@ -1299,7 +1368,7 @@ function digestForEventKey(eventKey) {
   return DIGEST_PATTERN.test(digest) ? digest : null;
 }
 
-function notification(localRelease, candidate) {
+function notification(localRelease, candidate, source = 'cache', repeatNotice = false) {
   return {
     status: 'update_available',
     eventKey: eventKeyForDigest(candidate.targetDigest),
@@ -1309,17 +1378,40 @@ function notification(localRelease, candidate) {
     severity: candidate.severity,
     summary: `Archify ${candidate.version} is available; see the official release notes for details.`,
     releaseNotes: candidate.releaseNotes,
+    ...(repeatNotice ? { source, checkedAt: candidate.checkedAt ?? null, noticeRequired: true } : {}),
   };
 }
 
-function resultForCandidate(localRelease, state) {
+function resultForCandidate(localRelease, state, {
+  repeatNotice = false, source = 'cache', nowMs = Date.now(),
+} = {}) {
   if (!state.candidate) return silent('cache-valid');
   const comparison = compareSemver(state.candidate.version, localRelease.version);
-  if (comparison <= 0) return silent('current');
-  if (state.notification.acknowledgedDigests.includes(state.candidate.targetDigest)) {
+  if (comparison <= 0) return repeatNotice ? {
+    status: 'current', installedVersion: localRelease.version,
+    availableVersion: state.candidate.version,
+    checkedAt: state.candidate.checkedAt ?? null,
+    source, noticeRequired: false,
+  } : silent('current');
+  if (!repeatNotice && state.notification.acknowledgedDigests.includes(state.candidate.targetDigest)) {
     return silent('already-notified');
   }
-  return notification(localRelease, state.candidate);
+  if (repeatNotice) {
+    const preference = state.preferences?.find((entry) => entry.targetDigest === state.candidate.targetDigest
+      && entry.version === state.candidate.version);
+    if (preference?.mode === 'ignore') return {
+      ...notification(localRelease, state.candidate, source, true),
+      noticeRequired: false,
+      reason: 'ignored',
+    };
+    if (preference?.mode === 'snooze' && Date.parse(preference.until) > nowMs) return {
+      ...notification(localRelease, state.candidate, source, true),
+      noticeRequired: false,
+      reason: 'snoozed',
+      suppressedUntil: preference.until,
+    };
+  }
+  return notification(localRelease, state.candidate, source, repeatNotice);
 }
 
 async function readBoundedBody(response) {
@@ -1391,6 +1483,9 @@ async function fetchCandidate({ fetchImpl, manifestUrl, timeoutMs }) {
     });
     if (response.status !== 200) {
       await cancelResponseBody(response);
+      if (response.status === 404 || response.status === 410) {
+        throw new ManifestWithdrawnError('manifest was withdrawn');
+      }
       throw new Error(`manifest returned HTTP ${response.status}`);
     }
     const mediaType = response.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase();
@@ -1425,21 +1520,22 @@ function defaultCacheDirectory() {
   return path.join(xdgCache && path.isAbsolute(xdgCache) ? xdgCache : path.join(homeDirectory, '.cache'), 'archify-skill');
 }
 
-function freshStateResult(localRelease, state, nowMs) {
+function freshStateResult(localRelease, state, nowMs, repeatNotice = false) {
   const nextCheckAt = Date.parse(state.check.nextCheckAt || '');
   if (Number.isFinite(nextCheckAt) && nextCheckAt > nowMs
-    && nextCheckAt <= nowMs + MAX_CACHE_HORIZON_MS) {
-    return resultForCandidate(localRelease, state);
+    && nextCheckAt <= nowMs + (repeatNotice
+      ? Math.ceil(DELIVERY_CHECK_TTL_MS * 1.2) : MAX_CACHE_HORIZON_MS)) {
+    return resultForCandidate(localRelease, state, { repeatNotice, nowMs });
   }
   return null;
 }
 
-async function resultAfterLosingOperation(cacheDirectory, operation, localRelease) {
+async function resultAfterLosingOperation(cacheDirectory, operation, localRelease, repeatNotice = false, nowMs = Date.now()) {
   await cancelOperation(cacheDirectory, operation);
   const cached = await readState(cacheDirectory, localRelease.version);
   if (cached.candidate
     && cached.notification.offeredDigests.includes(cached.candidate.targetDigest)) {
-    return resultForCandidate(localRelease, cached);
+    return resultForCandidate(localRelease, cached, { repeatNotice, nowMs });
   }
   return silent('check-in-progress');
 }
@@ -1466,7 +1562,9 @@ export async function checkForUpdate({
   now = Date.now,
   random = Math.random,
   timeoutMs = DEFAULT_TIMEOUT_MS,
+  repeatNotice = false,
 } = {}) {
+  if (updatesDisabled()) return silent('disabled');
   if (typeof fetchImpl !== 'function') return silent('runtime-unavailable');
   let localRelease;
   try {
@@ -1477,7 +1575,10 @@ export async function checkForUpdate({
 
   const nowMs = Number(now());
   if (!Number.isFinite(nowMs)) return silent('invalid-clock');
-  let stateDirectory = versionCacheDirectory(cacheDirectory, localRelease.version);
+  let stateDirectory = versionCacheDirectory(
+    repeatNotice ? path.join(cacheDirectory, 'reminders-v2') : cacheDirectory,
+    localRelease.version,
+  );
   let state;
   try {
     stateDirectory = await prepareCacheDirectory(stateDirectory);
@@ -1485,7 +1586,19 @@ export async function checkForUpdate({
   } catch {
     return silent('cache-unavailable');
   }
-  const cachedResult = freshStateResult(localRelease, state, nowMs);
+  let legacyCandidate;
+  if (repeatNotice && !state.candidate && !state.legacyMigrated) {
+    try {
+      const legacyDirectory = versionCacheDirectory(cacheDirectory, localRelease.version);
+      const legacy = await readState(legacyDirectory, localRelease.version);
+      if (legacy.candidate && compareSemver(legacy.candidate.version, localRelease.version) > 0) {
+        legacyCandidate = legacy.candidate;
+      }
+    } catch {
+      // Existing state is optional; a failed migration cannot block delivery.
+    }
+  }
+  const cachedResult = freshStateResult(localRelease, state, nowMs, repeatNotice);
   if (cachedResult) return cachedResult;
 
   let operation;
@@ -1499,29 +1612,31 @@ export async function checkForUpdate({
       const cached = await readState(stateDirectory, localRelease.version);
       if (cached.candidate
         && cached.notification.offeredDigests.includes(cached.candidate.targetDigest)) {
-        return resultForCandidate(localRelease, cached);
+        return resultForCandidate(localRelease, cached, { repeatNotice, nowMs });
       }
     } catch {
       return silent('cache-unavailable');
     }
-    return silent('check-in-progress');
+    return legacyCandidate
+      ? resultForCandidate(localRelease, { candidate: legacyCandidate }, { repeatNotice, nowMs })
+      : silent('check-in-progress');
   }
 
   try {
     state = await readState(stateDirectory, localRelease.version);
-    const racedResult = freshStateResult(localRelease, state, nowMs);
+    const racedResult = freshStateResult(localRelease, state, nowMs, repeatNotice);
     if (racedResult) {
       await cancelOperation(stateDirectory, operation);
       return racedResult;
     }
 
     if (!await operationOwnsActiveClaim(stateDirectory, operation)) {
-      return await resultAfterLosingOperation(stateDirectory, operation, localRelease);
+      return await resultAfterLosingOperation(stateDirectory, operation, localRelease, repeatNotice, nowMs);
     }
 
     await verifyCacheToken(cacheTokenFor(stateDirectory));
     if (!await operationOwnsActiveClaim(stateDirectory, operation)) {
-      return await resultAfterLosingOperation(stateDirectory, operation, localRelease);
+      return await resultAfterLosingOperation(stateDirectory, operation, localRelease, repeatNotice, nowMs);
     }
     let fetched;
     try {
@@ -1531,21 +1646,39 @@ export async function checkForUpdate({
         timeoutMs,
       });
     } catch (error) {
-      const reason = error instanceof UpdateContractError ? 'invalid-manifest' : 'check-failed';
+      const reason = error instanceof ManifestWithdrawnError ? 'withdrawn'
+        : error instanceof UpdateContractError ? 'invalid-manifest' : 'check-failed';
       try {
         const committed = await commitOperation(
           stateDirectory,
           operation,
           localRelease.version,
           (current) => ({
-            state: stateAfterFailedCheck(current, nowMs),
-            result: silent(reason),
+            state: stateAfterFailedCheck(repeatNotice
+              ? withMigratedCandidate(deliveryState(current), legacyCandidate)
+              : current, nowMs, error instanceof ManifestWithdrawnError),
+            result: error instanceof ManifestWithdrawnError ? silent('withdrawn')
+              : repeatNotice && (current.candidate || legacyCandidate)
+              ? resultForCandidate(localRelease,
+                { ...current, candidate: current.candidate || legacyCandidate },
+                { repeatNotice, nowMs })
+              : silent(reason),
           }),
         );
+        if (committed.fenced && repeatNotice) {
+          return await resultAfterLosingOperation(
+            stateDirectory, operation, localRelease, repeatNotice, nowMs,
+          );
+        }
         return committed.result;
       } catch {
         await cancelOperation(stateDirectory, operation).catch(() => {});
-        return silent('cache-unavailable');
+        if (error instanceof ManifestWithdrawnError) return silent('withdrawn');
+        return repeatNotice && (state.candidate || legacyCandidate)
+          ? resultForCandidate(localRelease,
+            { ...state, candidate: state.candidate || legacyCandidate },
+            { repeatNotice, nowMs })
+          : silent('cache-unavailable');
       }
     }
 
@@ -1556,10 +1689,13 @@ export async function checkForUpdate({
         localRelease.version,
         (current) => {
           const next = {
-            ...current,
-            candidate: fetched.candidate,
+            ...(repeatNotice ? deliveryState(current) : current),
+            candidate: repeatNotice
+              ? { ...fetched.candidate, checkedAt: new Date(nowMs).toISOString() }
+              : fetched.candidate,
             check: {
-              nextCheckAt: nextSuccessfulCheck(nowMs, random),
+              nextCheckAt: nextSuccessfulCheck(nowMs, random,
+                repeatNotice ? DELIVERY_CHECK_TTL_MS : CHECK_TTL_MS),
               consecutiveFailures: 0,
             },
             notification: {
@@ -1567,7 +1703,7 @@ export async function checkForUpdate({
               acknowledgedDigests: [...current.notification.acknowledgedDigests],
             },
           };
-          const result = resultForCandidate(localRelease, next);
+          const result = resultForCandidate(localRelease, next, { repeatNotice, source: 'network', nowMs });
           if (result.status === 'update_available') {
             if (!next.notification.offeredDigests.includes(next.candidate.targetDigest)) {
               next.notification.offeredDigests.push(next.candidate.targetDigest);
@@ -1578,15 +1714,25 @@ export async function checkForUpdate({
             result,
             capacityFallback: {
               state: stateAfterFailedCheck(current, nowMs, true),
-              result: silent('cache-unavailable'),
+              result: repeatNotice ? result : silent('cache-unavailable'),
             },
           };
         },
       );
+      if (committed.fenced && repeatNotice) {
+        return await resultAfterLosingOperation(
+          stateDirectory, operation, localRelease, repeatNotice, nowMs,
+        );
+      }
       return committed.result;
     } catch {
       await cancelOperation(stateDirectory, operation).catch(() => {});
-      return silent('cache-unavailable');
+      return repeatNotice
+        ? resultForCandidate(localRelease, {
+          ...state,
+          candidate: { ...fetched.candidate, checkedAt: new Date(nowMs).toISOString() },
+        }, { repeatNotice, source: 'network', nowMs })
+        : silent('cache-unavailable');
     }
   } catch {
     await cancelOperation(stateDirectory, operation).catch(() => {});
@@ -1660,12 +1806,93 @@ export async function acknowledgeUpdate({
   }
 }
 
+export async function setUpdatePreference({
+  releasePath = defaultReleasePath,
+  cacheDirectory = defaultCacheDirectory(),
+  eventKey,
+  mode,
+  days = 7,
+  now = Date.now,
+  monotonicNow = () => performance.now(),
+} = {}) {
+  const targetDigest = digestForEventKey(eventKey);
+  if (!targetDigest || !['snooze', 'ignore'].includes(mode)
+    || (mode === 'snooze' && (!Number.isInteger(days) || days < 1 || days > 365))) {
+    return silent('invalid-preference');
+  }
+  let localRelease;
+  try {
+    localRelease = validateLocalRelease(await readJsonFile(releasePath, MAX_LOCAL_RELEASE_BYTES));
+  } catch {
+    return silent('invalid-local-release');
+  }
+  let stateDirectory = versionCacheDirectory(
+    path.join(cacheDirectory, 'reminders-v2'), localRelease.version,
+  );
+  try {
+    stateDirectory = await prepareCacheDirectory(stateDirectory);
+  } catch {
+    return silent('cache-unavailable');
+  }
+  const nowMs = Number(now());
+  if (!Number.isFinite(nowMs)) return silent('invalid-clock');
+  const deadline = Number(monotonicNow()) + ACK_LOCK_WAIT_MS;
+  while (Number(monotonicNow()) < deadline) {
+    let operation;
+    try {
+      operation = await acquireOperation(stateDirectory);
+    } catch {
+      return silent('cache-unavailable');
+    }
+    if (!operation) {
+      if (!await waitUntilRetry(deadline, monotonicNow)) break;
+      continue;
+    }
+    try {
+      const committed = await commitOperation(
+        stateDirectory, operation, localRelease.version, (state) => {
+          if (!state.candidate || state.candidate.targetDigest !== targetDigest
+            || compareSemver(state.candidate.version, localRelease.version) <= 0) {
+            return { state: null, result: silent('invalid-preference') };
+          }
+          const preference = {
+            targetDigest,
+            version: state.candidate.version,
+            mode,
+            until: mode === 'snooze' ? new Date(nowMs + days * 24 * 60 * 60 * 1_000).toISOString() : null,
+          };
+          const preferences = (state.preferences || [])
+            .filter((entry) => entry.targetDigest !== targetDigest)
+            .slice(-30);
+          preferences.push(preference);
+          return {
+            state: { ...deliveryState(state), preferences },
+            result: { status: mode === 'snooze' ? 'snoozed' : 'ignored', eventKey,
+              ...(preference.until ? { suppressedUntil: preference.until } : {}) },
+          };
+        },
+      );
+      if (!committed.fenced) return committed.result;
+    } catch {
+      await cancelOperation(stateDirectory, operation).catch(() => {});
+      return silent('cache-unavailable');
+    }
+  }
+  return silent('check-in-progress');
+}
+
 async function runCli() {
-  if (process.env.ARCHIFY_UPDATE_CHECK_DISABLED === '1') return silent('disabled');
+  if (updatesDisabled()) return silent('disabled');
   const argumentsList = process.argv.slice(2);
   if (argumentsList.length === 0) return checkForUpdate();
   if (argumentsList.length === 2 && argumentsList[0] === '--ack') {
-    return acknowledgeUpdate({ eventKey: argumentsList[1] });
+    return silent('legacy-ack-no-op');
+  }
+  if (argumentsList.length === 2 && argumentsList[0] === '--snooze') {
+    return setUpdatePreference({ eventKey: argumentsList[1], mode: 'snooze' });
+  }
+  if (argumentsList.length === 2 && argumentsList[0] === '--ignore') {
+    return setUpdatePreference({ eventKey: argumentsList[1], mode: 'ignore' });
   }
   return silent('invalid-arguments');
 }
