@@ -88,6 +88,12 @@ participant labels do not fit the fixed 86px boxes. Spread derives box width
 and column distance from the viewBox while preserving participant order,
 lifelines, and message semantics.
 
+The artifact checker reports `composition.sequenceColumnSpace` from the rendered
+participants, routes and text. A large unused right-hand region in a fixed layout
+can produce an `inspect-sequence-width` recommendation in `finalize`; it is advice,
+not a new warning or failure. See [Sequence width review](../../references/delivery-contract.md#sequence-width-review)
+for the bounded authoring repair and explicit-fixed/legacy preservation rules.
+
 ## Design Rules
 
 - Put participants across the top, ordered by the story the reader should

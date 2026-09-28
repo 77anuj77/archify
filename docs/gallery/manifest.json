@@ -287,8 +287,8 @@
       "engineeringProfile": null,
       "nodeCount": 7,
       "edgeCount": 12,
-      "artifactBytes": 762283,
-      "artifactSha256": "94959bf649035115ba07be3970d0fb788c51b5d791cc6afe5ceb28fa27774cef",
+      "artifactBytes": 762317,
+      "artifactSha256": "325cfb1b4030fac6625db97bb9254b328c3b1dae1d7be9064433626984bcb021",
       "sourceBytes": 3805,
       "sourceSha256": "f8486daa803fff6c295cecca4604c561fbbf9acb2e83326022b5a87639e8afe6",
       "checks": [
@@ -372,6 +372,18 @@
         },
         "leadingSpace": {
           "measured": false,
+          "reviewSuggested": false
+        },
+        "sequenceColumnSpace": {
+          "measured": true,
+          "columnFit": "spread",
+          "participantCount": 7,
+          "occupiedRight": 1040,
+          "viewBoxLeft": 0,
+          "canvasWidth": 1080,
+          "emptyRightPx": 40,
+          "emptyRightRatio": 0.037,
+          "typicalParticipantWidth": 113,
           "reviewSuggested": false
         },
         "desktopReadability": {
@@ -870,8 +882,8 @@
       "engineeringProfile": null,
       "nodeCount": 7,
       "edgeCount": 14,
-      "artifactBytes": 761370,
-      "artifactSha256": "03be1cf3cfc3a1ac5d7ee0855b93ddc186133cf8d7c5feb17b4c5289555a52d6",
+      "artifactBytes": 761403,
+      "artifactSha256": "5843c29f9a7ee6b0643185b6080de67424a584ed923a1274856fbf1343b420d1",
       "sourceBytes": 3766,
       "sourceSha256": "b8c6c52f1763ede2933c77deb8da59b3e06917bc41d27e66df896136456b859a",
       "checks": [
@@ -955,6 +967,18 @@
         },
         "leadingSpace": {
           "measured": false,
+          "reviewSuggested": false
+        },
+        "sequenceColumnSpace": {
+          "measured": true,
+          "columnFit": "fixed",
+          "participantCount": 7,
+          "occupiedRight": 753,
+          "viewBoxLeft": 0,
+          "canvasWidth": 820,
+          "emptyRightPx": 67,
+          "emptyRightRatio": 0.082,
+          "typicalParticipantWidth": 86,
           "reviewSuggested": false
         },
         "desktopReadability": {
