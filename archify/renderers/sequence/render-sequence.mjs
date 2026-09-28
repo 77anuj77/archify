@@ -461,7 +461,9 @@ function legendLayout() {
     x: 40,
     baselineY: layout.legendY,
     width: viewBox[0] - 80,
-    minTitleY: Math.max(layout.legendY - 30, contentBottom + LEGEND_CONTENT_GAP),
+    // The same content-based budget as legendRequiredHeight(): a wrapped
+    // legend may use any rows it needs as long as it stays below the content.
+    minTitleY: Math.max(layout.lifelineTop, contentBottom + LEGEND_CONTENT_GAP),
     unfit: sequence.meta?.legend === undefined ? 'hide' : 'error',
     diagramType: 'sequence',
   };

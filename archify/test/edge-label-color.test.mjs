@@ -170,6 +170,39 @@ test('sequence legend stays below a late message with a note', () => {
   assert.ok(Number(fs.readFileSync(automatic.output, 'utf8').match(/<svg viewBox="0 0 920 (\d+)"/)[1]) > 760);
 });
 
+test('sequence repair height also holds a wrapped legend', () => {
+  // A narrow canvas with all five variants wraps the legend to two rows; the
+  // suggested height must make that legend actually render below the content.
+  const variants = ['emphasis', 'return', 'security', 'dashed', 'default'];
+  const doc = (height) => ({
+    schema_version: 1, diagram_type: 'sequence',
+    meta: { title: 'Wrapped legend', output: 'wrapped.html', quality_profile: 'showcase', viewBox: [480, height] },
+    participants: [{ id: 'a', type: 'frontend', label: 'Client' }, { id: 'b', type: 'backend', label: 'Server' }],
+    messages: variants.map((variant, index) => ({
+      from: index % 2 ? 'b' : 'a', to: index % 2 ? 'a' : 'b', y: 180 + index * 60, label: variant, variant,
+    })).concat([{ from: 'a', to: 'b', y: 477, label: 'late', note: 'completed' }]),
+  });
+  const write = (name, source) => {
+    const input = path.join(tmp, `${name}.json`);
+    fs.writeFileSync(input, JSON.stringify(source));
+    return input;
+  };
+  const failed = spawnSync(process.execPath, [cli, 'validate', 'sequence', write('wrapped-short', doc(560)), '--json'], { cwd: skillRoot, encoding: 'utf8' });
+  assert.notEqual(failed.status, 0);
+  const height = Number(failed.stdout.match(/set meta\.viewBox\[1\] to at least (\d+)/)?.[1]);
+  assert.ok(height > 560, failed.stdout);
+  const output = path.join(tmp, 'wrapped-repaired.html');
+  const repaired = spawnSync(process.execPath, [cli, 'render', 'sequence', write('wrapped-repaired', doc(height)), output], { cwd: skillRoot, encoding: 'utf8' });
+  assert.equal(repaired.status, 0, repaired.stderr);
+  const html = fs.readFileSync(output, 'utf8');
+  const baselines = new Set([...html.matchAll(/data-legend-semantic-kind="[^"]+"[^>]*data-legend-baseline="([\d.]+)"/g)].map((match) => match[1]));
+  assert.equal([...html.matchAll(/data-legend-semantic-kind="/g)].length, variants.length, 'every variant appears in the repaired legend');
+  assert.ok(baselines.size >= 2, 'the fixture must exercise a wrapped legend');
+  const legendTitle = Number(html.match(/<text x="[\d.]+" y="([\d.]+)"[^>]*>Legend<\/text>/)[1]);
+  const noteY = Number(html.match(/<text data-detail="fine"[^>]*>completed<\/text>/)[0].match(/ y="([\d.]+)"/)[1]);
+  assert.ok(noteY + 2 < legendTitle - 12, `note at ${noteY}, legend title at ${legendTitle}`);
+});
+
 test('edge path and label classes resolve to the same theme token', () => {
   const template = fs.readFileSync(path.join(skillRoot, 'assets/template.html'), 'utf8');
   for (const variant of VARIANTS) {

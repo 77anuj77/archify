@@ -74,7 +74,7 @@ muted text color.
 | Message spacing | ≥28px vertical between messages that share horizontal space |
 | Arrow span | ≥60px horizontal between the two participants |
 | Segments | y pixel ranges with `to > from`, inside `[72, lifeline bottom + 20]` |
-| Legend row | y = height − 54 |
+| Legend | last row baseline at height − 54; extra rows wrap upward and stay 12px below the timeline content |
 
 `segments[].from/to` and `activations[].from/to` are y pixel coordinates, not
 participant ids; activations also require `to > from`.
