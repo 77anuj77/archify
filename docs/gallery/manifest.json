@@ -287,10 +287,10 @@
       "engineeringProfile": null,
       "nodeCount": 7,
       "edgeCount": 12,
-      "artifactBytes": 759977,
-      "artifactSha256": "4afe24a92e267e4d46e60560b2e4d15859e1a6278d3b02635d8c8ac99e2d611e",
+      "artifactBytes": 759989,
+      "artifactSha256": "6e7d6935ab2de9bd028496829500f8dd732afe6b14cf0467284ff1a531634cf4",
       "sourceBytes": 3805,
-      "sourceSha256": "f5c2e44f9a44000adc7c3b3040c4fcd88fe50b7cf8761302c21eb0c184e5780a",
+      "sourceSha256": "f8486daa803fff6c295cecca4604c561fbbf9acb2e83326022b5a87639e8afe6",
       "checks": [
         {
           "name": "single_svg",
@@ -870,8 +870,8 @@
       "engineeringProfile": null,
       "nodeCount": 7,
       "edgeCount": 14,
-      "artifactBytes": 759058,
-      "artifactSha256": "9b46f19e67c8ebec5ff984dd9f5bc520385c805d53630debb24f224ef3b90b5a",
+      "artifactBytes": 759076,
+      "artifactSha256": "e7e35d76885dc248a50139407ce147b58fb8709c53de68d219391380adf6ae40",
       "sourceBytes": 3766,
       "sourceSha256": "b8c6c52f1763ede2933c77deb8da59b3e06917bc41d27e66df896136456b859a",
       "checks": [
