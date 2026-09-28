@@ -9624,7 +9624,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         var shellFloor = Math.min(MIN_READER_WIDTH, Math.max(0, window.innerWidth - chromeMetrics().bodyX));
         html.style.setProperty('--archify-reader-width', Math.max(rounded, shellFloor) + 'px');
         if (rounded < shellFloor) {
-          html.style.setProperty('--archify-diagram-max-width', Math.max(1, rounded - chromeMetrics().diagramX) + 'px');
+          // `rounded` already includes a docked rail and its gap; the SVG cap
+          // is only the diagram's share, not the space beside it.
+          var railShare = html.getAttribute('data-reader-rail') === 'true' ? RAIL_WIDTH + RAIL_GAP : 0;
+          html.style.setProperty('--archify-diagram-max-width', Math.max(1, rounded - railShare - chromeMetrics().diagramX) + 'px');
           html.setAttribute('data-reader-narrow', 'true');
         } else {
           html.style.removeProperty('--archify-diagram-max-width');

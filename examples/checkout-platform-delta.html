@@ -14297,7 +14297,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         var shellFloor = Math.min(MIN_READER_WIDTH, Math.max(0, window.innerWidth - chromeMetrics().bodyX));
         html.style.setProperty(&#39;--archify-reader-width&#39;, Math.max(rounded, shellFloor) + &#39;px&#39;);
         if (rounded &lt; shellFloor) {
-          html.style.setProperty(&#39;--archify-diagram-max-width&#39;, Math.max(1, rounded - chromeMetrics().diagramX) + &#39;px&#39;);
+          // `rounded` already includes a docked rail and its gap; the SVG cap
+          // is only the diagram&#39;s share, not the space beside it.
+          var railShare = html.getAttribute(&#39;data-reader-rail&#39;) === &#39;true&#39; ? RAIL_WIDTH + RAIL_GAP : 0;
+          html.style.setProperty(&#39;--archify-diagram-max-width&#39;, Math.max(1, rounded - railShare - chromeMetrics().diagramX) + &#39;px&#39;);
           html.setAttribute(&#39;data-reader-narrow&#39;, &#39;true&#39;);
         } else {
           html.style.removeProperty(&#39;--archify-diagram-max-width&#39;);
@@ -28348,7 +28351,10 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
         var shellFloor = Math.min(MIN_READER_WIDTH, Math.max(0, window.innerWidth - chromeMetrics().bodyX));
         html.style.setProperty(&#39;--archify-reader-width&#39;, Math.max(rounded, shellFloor) + &#39;px&#39;);
         if (rounded &lt; shellFloor) {
-          html.style.setProperty(&#39;--archify-diagram-max-width&#39;, Math.max(1, rounded - chromeMetrics().diagramX) + &#39;px&#39;);
+          // `rounded` already includes a docked rail and its gap; the SVG cap
+          // is only the diagram&#39;s share, not the space beside it.
+          var railShare = html.getAttribute(&#39;data-reader-rail&#39;) === &#39;true&#39; ? RAIL_WIDTH + RAIL_GAP : 0;
+          html.style.setProperty(&#39;--archify-diagram-max-width&#39;, Math.max(1, rounded - railShare - chromeMetrics().diagramX) + &#39;px&#39;);
           html.setAttribute(&#39;data-reader-narrow&#39;, &#39;true&#39;);
         } else {
           html.style.removeProperty(&#39;--archify-diagram-max-width&#39;);

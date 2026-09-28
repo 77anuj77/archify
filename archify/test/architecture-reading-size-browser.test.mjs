@@ -156,6 +156,32 @@ test('a first-screen fit never pushes relationship labels below the 6px floor', 
     assert.ok(edges.every(size => size >= 6), JSON.stringify(edges));
     // This graph is taller than the floor allows, so it scrolls as authored.
     assert.equal(overflow, 'authored');
+
+    // Moving the notes beside the diagram docks the rail. The shell keeps its
+    // desktop floor, but the SVG gets only the diagram's share: its primary
+    // labels return to the docked comfort size instead of doubling.
+    const docked = await browser.cdp.send('Runtime.evaluate', { returnByValue: true, awaitPromise: true, expression: `(async () => {
+      document.getElementById('rail-placement').click();
+      await Archify.layoutStability.whenStable();
+      const svg = document.querySelector('.diagram-container > svg');
+      const svgRect = svg.getBoundingClientRect();
+      const railRect = document.querySelector('.reader-rail').getBoundingClientRect();
+      const scale = svgRect.width / svg.viewBox.baseVal.width;
+      const result = {
+        rail: document.documentElement.getAttribute('data-reader-rail'),
+        shellWidth: document.querySelector('.container').getBoundingClientRect().width,
+        primary: Math.max(...[...svg.querySelectorAll('text[data-node-label]')].map(text => Number(text.getAttribute('font-size')) * scale)),
+        svgRight: svgRect.right, railLeft: railRect.left,
+      };
+      localStorage.removeItem('archify-rail-placement');
+      return result;
+    })()` }, session);
+    assert.equal(docked.exceptionDetails, undefined);
+    const rail = docked.result.value;
+    assert.equal(rail.rail, 'true', JSON.stringify(rail));
+    assert.ok(rail.shellWidth >= 960, JSON.stringify(rail));
+    assert.ok(rail.primary >= 13.5 && rail.primary <= 14.2, JSON.stringify(rail));
+    assert.ok(rail.svgRight <= rail.railLeft, JSON.stringify(rail));
   } finally {
     await browser.close();
     fs.rmSync(dir, { recursive: true, force: true });
