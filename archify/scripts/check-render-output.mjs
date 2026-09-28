@@ -796,11 +796,25 @@ function collectSequenceColumnSpace({ svgAttrs, fragment, nodeRects, arrows }) {
   const columnFit = svgAttrs['data-sequence-column-fit'];
   if (!['fixed', 'spread'].includes(columnFit)) return null;
   const evidence = { measured: false, reviewSuggested: false, columnFit };
-  if (svgAttrs.transform
-      || [...fragment.matchAll(/<g\b[^>]*\btransform\s*=[^>]*>/gi)]
-        .some((match) => !/\bdata-semantic-sigil=/.test(match[0]))
-      || /<(?:path|line|rect|text)\b[^>]*\btransform\s*=/i.test(fragment)
-      || /<tspan\b/i.test(fragment)) return evidence;
+  if (svgAttrs.transform || /<tspan\b/i.test(fragment)) return evidence;
+  // Brand badges stay inside their participant box. Ignore only that subtree's
+  // transforms, including the preset path or nested fallback icon's scale.
+  const brandGroups = [];
+  for (const token of fragment.matchAll(SVG_TAG_TOKEN)) {
+    if (!token[2]) continue;
+    const name = token[2].toLowerCase();
+    if (token[1]) {
+      if (name === 'g') brandGroups.pop();
+      continue;
+    }
+    const attrs = parseAttrs(token[0]);
+    const inBrand = brandGroups.at(-1) === true || (name === 'g'
+      && Boolean(attrs['data-brand-mark'])
+      && String(attrs.class || '').split(/\s+/).includes('brand-mark'));
+    if (!inBrand && attrs.transform && ['g', 'path', 'line', 'rect', 'text'].includes(name)
+        && !(name === 'g' && attrs['data-semantic-sigil'])) return evidence;
+    if (name === 'g' && !/\/\s*>$/.test(token[0])) brandGroups.push(inBrand);
+  }
   const [originX, , width, height] = viewBoxRect(svgAttrs);
   if (![originX, width, height].every(Number.isFinite) || width <= 0 || height <= 0) return evidence;
   const nodeCount = [...fragment.matchAll(/<g\b[^>]*\bdata-node-id=/gi)].length;

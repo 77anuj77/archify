@@ -95,6 +95,32 @@ test('explicit fixed remains byte-identical to the legacy default and advice pre
   assert.equal(JSON.parse(fs.readFileSync(explicit.input)).meta.column_fit, 'fixed');
 });
 
+test('participant brand marks retain width advice while unrelated transforms remain unmeasured', t => {
+  const spec = sequence();
+  spec.participants[0].brand = 'github';
+  const { output, html } = render(t, spec);
+  assert.match(html, /data-brand-mark="github"/);
+  const { report, exitCode } = check(output);
+  const space = report.composition.sequenceColumnSpace;
+  assert.equal(exitCode, 0);
+  assert.equal(space.measured, true);
+  assert.equal(space.participantCount, 6);
+  assert.equal(space.occupiedRight, 645);
+  assert.equal(space.emptyRightPx, 435);
+  assert.equal(space.emptyRightRatio, 0.403);
+  assert.equal(summary(report).layoutReviewRecommendation.action, 'inspect-sequence-width');
+  assert.equal(fs.readFileSync(output, 'utf8'), html);
+
+  for (const changed of [
+    html.replace('<g id="node-p5"', '<g transform="translate(300 0)" id="node-p5"'),
+    html.replace('class="a-emphasis"', 'class="a-emphasis" transform="translate(300 0)"'),
+  ]) {
+    assert.notEqual(changed, html, 'the unsupported transform must be present');
+    fs.writeFileSync(output, changed);
+    assert.equal(check(output).report.composition.sequenceColumnSpace.measured, false);
+  }
+});
+
 test('small conversations and a compact fixed canvas are not advised to stretch', t => {
   for (const count of [2, 3]) {
     const { output } = render(t, sequence(count));
