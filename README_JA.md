@@ -410,6 +410,15 @@ WeChat で下の QR コードをスキャンするか、画像を保存して We
 
 </details>
 
+<details>
+<summary>Alipay で支援する</summary>
+
+Alipay で下の QR コードをスキャンするか、画像を保存して Alipay で読み取ってください。
+
+<p align="center"><img src="docs/assets/support/alipay.png" alt="Archify の開発者を支援する Alipay の QR コード（氏名は非表示）" width="240" /></p>
+
+</details>
+
 利用、共有、不具合の報告、改善への貢献も、プロジェクトの支えになります。
 
 ## Star History

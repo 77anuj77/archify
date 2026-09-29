@@ -426,6 +426,15 @@ node bin/archify.mjs deliver workflow examples/agent-tool-call.workflow.json /tm
 
 </details>
 
+<details>
+<summary>通过支付宝赞赏支持</summary>
+
+使用支付宝扫描下方二维码，或保存图片后在支付宝中识别。
+
+<p align="center"><img src="docs/assets/support/alipay.png" alt="支持 Archify 作者的支付宝收款码（姓名已遮挡）" width="240" /></p>
+
+</details>
+
 使用、分享、反馈问题和贡献改进，也都是对项目的支持。
 
 ## Star History
