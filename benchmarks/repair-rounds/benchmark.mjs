@@ -270,6 +270,7 @@ function check(args) {
   const fixtures = manifestPaths(manifestFile, manifest);
   const cases = [];
   let ok = manifest.evidence_eligible === false;
+  const baselines = new Map();
   for (const entry of manifest.cases || []) {
     const fixtureFile = fixtures[entry.type];
     const problems = [];
@@ -278,13 +279,19 @@ function check(args) {
       problems.push(`fixture for ${entry.type} not found`);
     } else {
       doc = JSON.parse(fs.readFileSync(fixtureFile, 'utf8'));
-      const baseline = invokeCli('validate', entry.type, fixtureFile, entry.quality || 'showcase', null);
-      try {
-        const receipt = JSON.parse(baseline.stdout);
-        if (receipt.ok !== true) problems.push(`fixture does not pass validate: ${(receipt.diagnostics || []).map((d) => d.code).join(',') || receipt.error}`);
-      } catch {
-        problems.push('fixture validate produced no JSON receipt');
+      const baselineKey = `${fixtureFile}${entry.quality || 'showcase'}`;
+      if (!baselines.has(baselineKey)) {
+        const baseline = invokeCli('validate', entry.type, fixtureFile, entry.quality || 'showcase', null);
+        try {
+          const receipt = JSON.parse(baseline.stdout);
+          baselines.set(baselineKey, receipt.ok === true
+            ? null
+            : `fixture does not pass validate: ${(receipt.diagnostics || []).map((d) => d.code).join(',') || receipt.error}`);
+        } catch {
+          baselines.set(baselineKey, 'fixture validate produced no JSON receipt');
+        }
       }
+      if (baselines.get(baselineKey)) problems.push(baselines.get(baselineKey));
     }
     for (const spec of entry.defects || []) {
       try {
