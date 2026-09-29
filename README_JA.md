@@ -42,14 +42,11 @@
 
 ## 実際の Archify
 
-<p align="center">
-  <!-- archify-launch-video -->
-  <a href="https://tt-a1i.github.io/archify/gallery.html"><img src="docs/assets/archify-live-proof.gif" alt="Signal Flow、Blueprint、Classic の各プリセットで動作する 3 つの検証済み Archify 成果物" width="960"/></a>
-  <br/>
-  <sub><strong>実際に生成された 3 つの成果物。</strong> Signal Flow · Blueprint · Classic · <a href="https://tt-a1i.github.io/archify/gallery.html">インタラクティブな Proof Lab を開く ↗</a></sub>
-</p>
+<!-- archify-launch-video -->
 
-**プレビューをクリックすると、実際のインタラクティブな成果物が開きます。** GIF は動きを見せるためのもので、実際に探索できるのはブラウザで開く HTML のほうです。
+https://github.com/user-attachments/assets/78570807-ba1d-4737-953f-55504a378a87
+
+**ひと言で、リポジトリを可視化。** 約35秒の英語デモで、図の操作、ソースコードへのリンク、経路の追跡をご覧ください。[インタラクティブな作例を試す ↗](https://tt-a1i.github.io/archify/gallery.html)
 
 <a id="start"></a>
 
