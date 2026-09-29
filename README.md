@@ -420,6 +420,15 @@ Scan the QR code below with WeChat, or save it and open it in WeChat to scan.
 
 </details>
 
+<details>
+<summary>Support via Alipay</summary>
+
+Scan the QR code below with Alipay, or save it and open it in Alipay to scan.
+
+<p align="center"><img src="docs/assets/support/alipay.png" alt="Alipay QR code to support the Archify maintainer (name redacted)" width="240" /></p>
+
+</details>
+
 Using Archify, sharing it, reporting bugs, and contributing improvements are also ways to help.
 
 ## Star History
