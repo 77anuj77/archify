@@ -50,8 +50,9 @@ function capture(doc, pointer) {
 }
 
 const LONG_LABEL = 'Quarterly Cross-Regional Compliance Reconciliation And Settlement Orchestration Service';
-const LONG_TITLE = 'Untrusted Extremely Long Diagram Title '.repeat(11).trim();
-const LONG_SUBTITLE = 'A deliberately overlong subtitle that inflates the rendered header far beyond any reasonable desktop viewport width '.repeat(4).trim();
+// Unbreakable strings: spaced prose wraps in the header and stays contained.
+const LONG_TITLE = 'LongRunningComplianceReconciliationServiceDeploymentPipelineOverview'.repeat(6);
+const LONG_SUBTITLE = 'QuarterlyCrossRegionalComplianceReconciliationAndSettlementOrchestrationReport'.repeat(5);
 
 export const DEFECTS = {
   'meta-missing-output': {
