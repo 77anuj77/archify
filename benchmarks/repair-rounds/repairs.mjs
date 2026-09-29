@@ -124,6 +124,19 @@ const RULES = [
     },
   },
   {
+    // "set meta.output to a portable relative .html path such as reports/diagram.html"
+    match: (diagnostic) => (diagnostic.code || '').startsWith('output/meta-')
+      && diagnostic.subject?.path === '/meta/output',
+    apply(diagnostic, doc) {
+      const fix = (diagnostic.supportedFixes || [])
+        .find((entry) => /such as (\S+\.html)/.test(entry));
+      const value = fix ? fix.match(/such as (\S+\.html)/)[1] : 'output.html';
+      return setByPointer(doc, '/meta/output', value)
+        ? { detail: `set /meta/output to ${JSON.stringify(value)}` }
+        : null;
+    },
+  },
+  {
     // "...reflow automatic spacing ... so the complete viewBox width is at most
     // 1240px (current 2400px; ...)"
     match: (diagnostic) => diagnostic.code === 'composition/desktop-readability'

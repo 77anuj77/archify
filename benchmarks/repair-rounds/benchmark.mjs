@@ -220,15 +220,21 @@ function runCase(manifestCase, fixtures, config) {
     lastDocHash = docHash;
   }
 
-  const defectResults = injections.map((injection) => ({
-    class: injection.class,
-    expectedCodes: injection.expectedCodes,
-    firstSeenRound: injection.firstSeenRound ?? null,
-    firstSeenGate: injection.firstSeenGate ?? null,
-    seenCount: injection.seenCount || 0,
-    detected: injection.firstSeenRound !== undefined,
-    late: LATE_GATES.has(injection.firstSeenGate),
-  }));
+  const defectResults = injections.map((injection) => {
+    const detected = injection.firstSeenRound !== undefined;
+    return {
+      class: injection.class,
+      expectedCodes: injection.expectedCodes,
+      firstSeenRound: injection.firstSeenRound ?? null,
+      firstSeenGate: injection.firstSeenGate ?? null,
+      seenCount: injection.seenCount || 0,
+      detected,
+      // a silent defect passed every gate; an unreached defect never surfaced
+      // because the loop stalled on an earlier failure first
+      silent: !detected && passed,
+      late: LATE_GATES.has(injection.firstSeenGate),
+    };
+  });
 
   const receiptTokens = rounds.reduce((sum, round) => sum + round.receiptTokens, 0);
   const candidateTokens = rounds.reduce((sum, round) => sum + round.candidateTokens, 0);
@@ -375,7 +381,8 @@ function summarize(manifest, results) {
     disclosure: {
       defects: defects.length,
       detected: detected.length,
-      undetected: defects.length - detected.length,
+      silent: defects.filter((defect) => !defect.detected && defect.silent).length,
+      unreached: defects.filter((defect) => !defect.detected && !defect.silent).length,
       firstRoundDisclosureRate: defects.length ? firstRound.length / defects.length : 0,
       lateDiscoveryRate: detected.length ? late.length / detected.length : 0,
       firstSeenGate: byGate,

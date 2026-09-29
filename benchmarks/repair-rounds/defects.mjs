@@ -57,7 +57,8 @@ const LONG_SUBTITLE = 'QuarterlyCrossRegionalComplianceReconciliationAndSettleme
 export const DEFECTS = {
   'meta-missing-output': {
     appliesTo: ALL_TYPES,
-    expectedCodes: { default: ['schema/required'] },
+    // finalize checks meta.output at the deliver gate before validate runs.
+    expectedCodes: { default: ['schema/required', 'output/meta-path-syntax', 'output/path-resolution'] },
     inject(doc) {
       const restores = [capture(doc, '/meta/output')];
       delete doc.meta.output;

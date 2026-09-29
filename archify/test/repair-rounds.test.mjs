@@ -144,7 +144,7 @@ test('report aggregates disclosure, late discovery, and token cost across receip
       defects: [
         { class: 'node-long-label', detected: true, firstSeenRound: 1, firstSeenGate: 'validate', late: false },
         { class: 'title-overflow', detected: true, firstSeenRound: 2, firstSeenGate: 'browser-check', late: true },
-        { class: 'subtitle-overflow', detected: false, firstSeenRound: null, firstSeenGate: null, late: false },
+        { class: 'subtitle-overflow', detected: false, silent: true, firstSeenRound: null, firstSeenGate: null, late: false },
       ],
       rounds: [{ diagnostics: [{ code: 'viewer/viewport-overflow', hasSubjectDetail: true, hasEvidence: true, hasSupportedFixes: true }] }],
       passed: true,
@@ -163,7 +163,8 @@ test('report aggregates disclosure, late discovery, and token cost across receip
   assert.deepEqual(report.overall.roundsToPass, { mean: 2.5, median: 3, max: 3 });
   assert.equal(report.overall.disclosure.defects, 4);
   assert.equal(report.overall.disclosure.detected, 3);
-  assert.equal(report.overall.disclosure.undetected, 1);
+  assert.equal(report.overall.disclosure.silent, 1);
+  assert.equal(report.overall.disclosure.unreached, 0);
   assert.equal(report.overall.disclosure.firstRoundDisclosureRate, 0.5);
   assert.equal(report.overall.disclosure.lateDiscoveryRate, 1 / 3);
   assert.equal(report.overall.disclosure.firstSeenGate['browser-check'], 1);
