@@ -139,8 +139,8 @@ test('report aggregates disclosure, late discovery, and token cost across receip
       benchmark: 'repair-rounds',
       caseId: 'late-case',
       diagramType: 'architecture',
-      command: 'finalize',
-      repairMode: 'oracle',
+      command: 'validate',
+      repairMode: 'rules',
       defects: [
         { class: 'node-long-label', detected: true, firstSeenRound: 1, firstSeenGate: 'validate', late: false },
         { class: 'title-overflow', detected: true, firstSeenRound: 2, firstSeenGate: 'browser-check', late: true },
@@ -195,4 +195,58 @@ test('report rejects duplicate and foreign receipts', () => {
   const foreign = run(['report', '--results', foreignFile]);
   assert.equal(foreign.status, 2);
   assert.equal(JSON.parse(foreign.stdout).error.code, 'INVALID_RESULT');
+});
+
+function reportRow(caseId, overrides = {}) {
+  return {
+    schemaVersion: 1, benchmark: 'repair-rounds', caseId, diagramType: 'workflow',
+    command: 'validate', repairMode: 'rules', defects: [], rounds: [],
+    passed: true, stalled: false,
+    totals: { rounds: 2, unactionable: 0, tokens: { estimate: 10, receipts: 5 } },
+    ...overrides,
+  };
+}
+
+function aggregateRows(name, rows, extraArgs = []) {
+  const file = path.join(tmp, `${name}.jsonl`);
+  fs.writeFileSync(file, rows.map((row) => JSON.stringify(row)).join('\n'));
+  return run(['report', '--results', file, ...extraArgs]);
+}
+
+test('rounds to pass excludes stalled and exhausted cases', () => {
+  const failed = [
+    reportRow('stalled', { passed: false, stalled: true, totals: { rounds: 1, unactionable: 1, tokens: { estimate: 10, receipts: 5 } } }),
+    reportRow('exhausted', { passed: false }),
+  ];
+  const result = aggregateRows('outcomes', [reportRow('success'), ...failed]);
+  assert.equal(result.status, 0);
+  const { overall } = JSON.parse(result.stdout);
+  assert.deepEqual(overall.roundsToPass, { mean: 2, median: 2, max: 2 });
+  assert.equal(overall.passed, 1);
+  assert.equal(overall.stalled, 1);
+  assert.equal(overall.exhausted, 1);
+  const noPass = aggregateRows('no-pass', failed);
+  assert.equal(noPass.status, 0);
+  assert.deepEqual(JSON.parse(noPass.stdout).overall.roundsToPass, { mean: null, median: null, max: null });
+});
+
+test('report rejects mixed modes instead of counting one case twice toward coverage', () => {
+  const manifestFile = writeJson('coverage-manifest.json', { id: 'coverage', cases: [{ id: 'A' }, { id: 'B' }] });
+  for (const override of [{ repairMode: 'oracle' }, { command: 'finalize' }]) {
+    const result = aggregateRows('mixed', [reportRow('A'), reportRow('A', override)], ['--manifest', manifestFile]);
+    assert.equal(result.status, 2);
+    assert.equal(JSON.parse(result.stdout).error.code, 'MIXED_MODES');
+  }
+  for (const [name, rows, complete, missing] of [
+    ['missing', [reportRow('A')], false, ['B']],
+    ['foreign-case', [reportRow('A'), reportRow('C')], false, ['B']],
+    ['complete', [reportRow('A'), reportRow('B')], true, []],
+  ]) {
+    const result = aggregateRows(name, rows, ['--manifest', manifestFile]);
+    assert.equal(result.status, 0);
+    const report = JSON.parse(result.stdout);
+    assert.equal(report.coverage.complete, complete);
+    assert.equal(report.evidenceEligible, complete);
+    assert.deepEqual(report.coverage.missing, missing);
+  }
 });

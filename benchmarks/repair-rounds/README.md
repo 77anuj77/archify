@@ -8,7 +8,7 @@ It is a measurement harness, not a model leaderboard, and it contains no human o
 
 | Metric | Definition |
 |---|---|
-| Rounds to pass | `finalize`/`validate` invocations needed before the mutated candidate passes |
+| Rounds to pass | `finalize`/`validate` invocations for successful cases only; `null` when none pass (stalled and round-cap-exhausted cases are counted separately) |
 | First-round disclosure rate | injected defects surfaced by round 1 ÷ injected defects |
 | First-detection stage | the gate that first reports each defect (`validate`, `deliver`, `check`, `browser-check`, or `undetected`) |
 | Late discovery rate | detected defects first surfaced at `check` or `browser-check` ÷ detected defects |
@@ -45,6 +45,8 @@ node benchmarks/repair-rounds/benchmark.mjs report --results results.jsonl --man
 ```
 
 `run` sets `ARCHIFY_UPDATE_CHECK_DISABLED=1` so receipts are not perturbed by the update check. `browser-check` needs local Chrome; without it the late-discovery cases report the gate truthfully as skipped rather than passed.
+
+Reports require one command and repair mode per input file; mixed configurations are rejected. Coverage compares unique case IDs against the manifest, so repeated cases cannot fill missing cases.
 
 ## Repair modes
 

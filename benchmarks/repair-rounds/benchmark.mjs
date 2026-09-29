@@ -367,16 +367,17 @@ function summarize(manifest, results) {
   const diagnostics = results.flatMap((result) => (result.rounds || []).flatMap((round) => round.diagnostics));
   const actionable = diagnostics.filter((d) => d.hasSubjectDetail && d.hasEvidence && d.hasSupportedFixes);
   const unactionable = results.reduce((sum, result) => sum + result.totals.unactionable, 0);
-  const roundCounts = results.map((result) => result.totals.rounds).sort((a, b) => a - b);
+  const roundCounts = results.filter((result) => result.passed).map((result) => result.totals.rounds).sort((a, b) => a - b);
   const tokenTotals = results.map((result) => result.totals.tokens.estimate);
   return {
     cases: results.length,
     passed: results.filter((result) => result.passed).length,
     stalled: results.filter((result) => result.stalled).length,
+    exhausted: results.filter((result) => !result.passed && !result.stalled).length,
     roundsToPass: {
-      mean: roundCounts.length ? roundCounts.reduce((a, b) => a + b, 0) / roundCounts.length : 0,
-      median: roundCounts.length ? roundCounts[Math.floor(roundCounts.length / 2)] : 0,
-      max: roundCounts.length ? Math.max(...roundCounts) : 0,
+      mean: roundCounts.length ? roundCounts.reduce((a, b) => a + b, 0) / roundCounts.length : null,
+      median: roundCounts.length ? roundCounts[Math.floor(roundCounts.length / 2)] : null,
+      max: roundCounts.length ? Math.max(...roundCounts) : null,
     },
     disclosure: {
       defects: defects.length,
@@ -424,9 +425,13 @@ function report(args) {
     .filter(Boolean)
     .map((line) => JSON.parse(line));
   for (const result of results) validateResult(result);
+  const modes = new Set(results.map((result) => `${result.command}:${result.repairMode}`));
+  if (modes.size > 1) {
+    throw new BenchmarkError('MIXED_MODES', 'report requires one command and repair mode; report each configuration separately');
+  }
   const seen = new Set();
   for (const result of results) {
-    const key = `${result.caseId}${result.command}${result.repairMode}`;
+    const key = result.caseId;
     if (seen.has(key)) {
       throw new BenchmarkError('DUPLICATE_RESULT', `duplicate result for ${result.caseId}`);
     }
@@ -438,7 +443,7 @@ function report(args) {
       expected: expected.size,
       present: new Set(results.map((result) => result.caseId)).size,
       missing: [...expected].filter((id) => !results.some((result) => result.caseId === id)).sort(),
-      complete: results.length === expected.size && results.every((result) => expected.has(result.caseId)),
+      complete: seen.size === expected.size && [...expected].every((id) => seen.has(id)),
     }
     : null;
   process.stdout.write(`${JSON.stringify({
