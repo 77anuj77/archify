@@ -397,6 +397,21 @@ Mermaid の自動パース、汎用オートレイアウト、ホスティング
 
 Issue、プルリクエスト、実際の図の投稿を歓迎します。まずは[コントリビューションガイド](CONTRIBUTING.md)をご覧ください。不具合は再現可能なバグ報告フォームから、検証済みの図は[コミュニティショーケースフォーム](https://github.com/tt-a1i/archify/issues/new?template=showcase.yml)から投稿できます。&nbsp;·&nbsp;[LINUX&nbsp;DO](https://linux.do)
 
+## Archify を支援する
+
+Archify が役に立ったら、継続的な開発をご支援いただけるとうれしいです。プロジェクトへの応援、ありがとうございます ❤️
+
+<details>
+<summary>WeChat Pay で支援する</summary>
+
+WeChat で下の QR コードをスキャンするか、画像を保存して WeChat で読み取ってください。
+
+<p align="center"><img src="docs/assets/support/wechat-pay.png" alt="Archify の開発者を支援する WeChat Pay の QR コード" width="240" /></p>
+
+</details>
+
+利用、共有、不具合の報告、改善への貢献も、プロジェクトの支えになります。
+
 ## Star History
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tt-a1i/archify/star-history/assets/star-history-dark.svg" /><img alt="Star History" src="https://raw.githubusercontent.com/tt-a1i/archify/star-history/assets/star-history-light.svg" /></picture></p>

@@ -407,6 +407,21 @@ Connect with other users and developers, share ideas, request features, report b
 
 Issues, pull requests, and real-world diagrams are welcome. Start with the [contribution guide](CONTRIBUTING.md), use the reproducible bug form for failures, or submit a validated diagram through the [community showcase form](https://github.com/tt-a1i/archify/issues/new?template=showcase.yml).&nbsp;·&nbsp;[LINUX&nbsp;DO](https://linux.do)
 
+## Support Archify
+
+If Archify has been useful to you, you can support its continued development. Thank you for helping keep the project going ❤️
+
+<details>
+<summary>Support via WeChat Pay</summary>
+
+Scan the QR code below with WeChat, or save it and open it in WeChat to scan.
+
+<p align="center"><img src="docs/assets/support/wechat-pay.png" alt="WeChat Pay QR code to support the Archify maintainer" width="240" /></p>
+
+</details>
+
+Using Archify, sharing it, reporting bugs, and contributing improvements are also ways to help.
+
 ## Star History
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tt-a1i/archify/star-history/assets/star-history-dark.svg" /><img alt="Star History" src="https://raw.githubusercontent.com/tt-a1i/archify/star-history/assets/star-history-light.svg" /></picture></p>

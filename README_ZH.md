@@ -413,6 +413,21 @@ node bin/archify.mjs deliver workflow examples/agent-tool-call.workflow.json /tm
 
 较大的功能或行为调整请先通过 Issue 对齐价值、兼容边界和非目标，再基于最新 `main` 开发。一个 PR 尽量只解决一个问题；核心代码和回归测试先行，生成物最后统一重建。Archify 坚持 Agent-first，优先完善稳定的机器可读诊断和现有权威合同，避免新增容易与 CLI 漂移的重复说明。&nbsp;·&nbsp;[LINUX&nbsp;DO](https://linux.do)
 
+## 支持 Archify
+
+如果 Archify 对你有帮助，欢迎支持项目的持续开发。谢谢你让这个项目继续走下去 ❤️
+
+<details>
+<summary>通过微信赞赏支持</summary>
+
+使用微信扫描下方二维码，或保存图片后在微信中识别。
+
+<p align="center"><img src="docs/assets/support/wechat-pay.png" alt="支持 Archify 作者的微信收款码" width="240" /></p>
+
+</details>
+
+使用、分享、反馈问题和贡献改进，也都是对项目的支持。
+
 ## Star History
 
 <p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/tt-a1i/archify/star-history/assets/star-history-dark.svg" /><img alt="Star History" src="https://raw.githubusercontent.com/tt-a1i/archify/star-history/assets/star-history-light.svg" /></picture></p>
