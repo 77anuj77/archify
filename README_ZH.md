@@ -44,13 +44,11 @@
 
 ## 看看 Archify 能做什么
 
-<p align="center">
-  <a href="https://tt-a1i.github.io/archify/gallery.html"><img src="docs/assets/archify-live-proof.gif" alt="三个经过验证的 Archify 成品依次展示 Signal Flow、Blueprint 和 Classic 预设" width="960"/></a>
-  <br/>
-  <sub><strong>三个真实生成、校验通过的成品。</strong> Signal Flow · Blueprint · Classic · <a href="https://tt-a1i.github.io/archify/gallery.html">打开可交互验证作品集 ↗</a></sub>
-</p>
+<!-- archify-launch-video -->
 
-**点击上方预览，打开真实交互成品。** GIF 展示效果，浏览器中的 HTML 才能点击探索。
+https://github.com/user-attachments/assets/88cff7dd-bdf3-4b97-950c-37cc079898b1
+
+**一句话，看懂你的项目。** 35 秒演示：探索交互图、查看源码关联、追踪完整路径。[试试可交互示例 ↗](https://tt-a1i.github.io/archify/gallery.html)
 
 <a id="start"></a>
 

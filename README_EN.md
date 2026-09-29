@@ -44,13 +44,11 @@
 
 ## See Archify in action
 
-<p align="center">
-  <a href="https://tt-a1i.github.io/archify/gallery.html"><img src="docs/assets/archify-live-proof.gif" alt="Three verified Archify artifacts moving through Signal Flow, Blueprint, and Classic presets" width="960"/></a>
-  <br/>
-  <sub><strong>Three real generated artifacts.</strong> Signal Flow · Blueprint · Classic · <a href="https://tt-a1i.github.io/archify/gallery.html">open the interactive Proof Lab ↗</a></sub>
-</p>
+<!-- archify-launch-video -->
 
-**Click the preview to open real interactive artifacts.** The GIF shows the motion; the HTML lets you explore it yourself.
+https://github.com/user-attachments/assets/78570807-ba1d-4737-953f-55504a378a87
+
+**One sentence. Your repo, mapped.** Watch the 35-second demo: explore the diagram, follow source links, and trace a path. [Try the interactive examples ↗](https://tt-a1i.github.io/archify/gallery.html)
 
 <a id="start"></a>
 
