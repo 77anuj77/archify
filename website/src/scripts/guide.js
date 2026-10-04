@@ -3,7 +3,7 @@
       'use strict';
       var recipes = JSON.parse(document.getElementById('guide-data').textContent);
       var types = ["architecture","workflow","sequence","dataflow","lifecycle"];
-      var colors = { architecture:'#0891b2', workflow:'#047857', sequence:'#6d28d9', dataflow:'#b45309', lifecycle:'#be123c' };
+      var colors = { architecture:'#22d3ee', workflow:'#34d399', sequence:'#a78bfa', dataflow:'#fbbf24', lifecycle:'#fb7185' };
       var language = ArchifySiteLanguage.read();
       var activeType = 'all';
       var lastRecipe = null;

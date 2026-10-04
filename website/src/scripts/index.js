@@ -6,16 +6,22 @@
     en: {
       'nav-guide':'Guide','nav-gallery':'Proof Lab','nav-start':'Start','nav-community':'Community','nav-install':'Install Skill',
       'hero-badge':'Agent Skill &nbsp;·&nbsp; stable &nbsp;·&nbsp; v[[ARCHIFY_VERSION]]',
-      'hero-h1':'From plain English<br>to architecture <em>you can trust.</em>',
-      'hero-sub':'Describe your system in chat. Archify generates a polished, explorable HTML diagram — with progressive MAP → READ → FULL detail, a semantic camera, path-aware stories, motion, and ultra-crisp export built in.',
-      'hero-cta':'Choose the right diagram','hero-gallery':'Explore proof gallery',
-      'proof-live':'Live proof','proof-status':'Generated, checked, interactive','proof-receipt':'Real gallery artifact · 9/9 validation checks','proof-open':'Open artifact','proof-hint':'Open a stable focus, lens, or route link and inspect the same authored relationship.',
-      'rail-label':'Live specimens — select to load',
-      'stat-types':'Diagram types','stat-presets':'Visual presets','stat-themes':'Coordinated themes','stat-export':'Native export scale','stat-deps':'Dependencies',
-      'label-types':'Diagram Types',
-      'types-h2':'Five ways to see your system.',
-      'types-body':'Architecture, workflows, sequences, data flows, or state machines — describe what you need and Archify picks the right visual language.',
-      'label-gallery':'Index',
+      'hero-agents':'Claude Code · Codex · Cursor · OpenCode · Copilot',
+      'hero-h1':'Talk through your system.<br>Get a map <em>you can trust.</em>',
+      'hero-sub':'Archify is an agent skill that turns a chat description — or your repository — into one self-contained, explorable HTML diagram. Validated before it ships, themed both ways, export-ready.',
+      'hero-cta':'Get started','hero-stars':'Open source on GitHub','copy':'Copy','copied':'Copied',
+      'demo-watch':'Watch the 35s demo','demo-title':'Archify 35-second demo','demo-close':'Close demo',
+      'tour-title':'Live artifact tour',
+      'proof-live':'Live','proof-open':'Open artifact',
+      'beat-0-k':'Focus','beat-1-k':'Upstream','beat-2-k':'Lens','beat-3-k':'Map',
+      'beat-0-t':'Focus one node, see what it drives.','beat-0-b':'Press Enter on any node — or open a stable link — and the camera isolates everything downstream of it.',
+      'beat-1-t':'Flip the reach. Find the cause.','beat-1-b':'Trace upstream to every dependency that feeds a step. Same file, same authored relationships, one hash change.',
+      'beat-2-t':'Compare by meaning, not by box.','beat-2-b':'Lens keeps only the semantic kinds you name — security against data, backend against storage — and quiets the rest.',
+      'beat-3-t':'Then the whole system, still crisp.','beat-3-b':'Pull back to MAP depth: lanes, boundaries, and every edge in one readable frame. This is the real artifact — try it.',
+      'stat-types':'Diagram types','stat-presets':'Visual presets','stat-checks':'Validation checks per artifact','stat-export':'Native export scale','stat-deps':'Runtime dependencies',
+      'label-types':'Diagram types',
+      'types-h2':'Five languages for <em>one system.</em>',
+      'types-body':'Architecture, workflows, sequences, data flows, or state machines — describe what you need and Archify picks the visual language that fits the question.',
       'types-more':'Browse the full proof gallery','types-more-sub':'Live artifacts · every preset · every type',
       'arch-h':'Architecture',
       'arch-p':'System components, cloud resources, databases, caches, services, security groups, and the connections between them.',
@@ -28,20 +34,18 @@
       'flow-p':'Data pipelines, ETL/ELT, analytics events, PII isolation, warehouse sync, lineage, and downstream consumers — with governance boundaries.',
       'life-h':'Lifecycle',
       'life-p':'State machines, object lifecycles, run/order/deployment status transitions — with wait states, retries, cancellation, and terminal outcomes.',
-      'label-features':'Features',
-      'features-h2':'Production-ready output,<br>zero configuration.',
-      'f1-h':'Four visual identities','f1-p':'Classic, Signal Flow, Blueprint, and Editorial share one geometry contract. Every preset includes coordinated dark/light themes and exports cleanly.','f1-tag':'4 PRESETS · 2 THEMES',
-      'f2-h':'Ultra-crisp 4× export','f2-p':'PNG, JPEG, WebP — all rasterized natively at up to 4× source resolution by the browser. No upsampling blur. Sharp on retina displays, slides, and print.','f2-tag':'PNG · JPEG · WEBP',
-      'f3-h':'Dual-theme SVG','f3-p':"The SVG export ships with both variable sets plus a @media prefers-color-scheme rule. Drop one file into a GitHub README — it follows the reader's theme.",'f3-tag':'VECTOR · SELF-THEMED',
-      'f4-h':'Copy to clipboard','f4-p':'One button puts a PNG straight on your clipboard. Paste directly into Slack, Notion, GitHub, or Figma — no intermediate save step.','f4-tag':'INSTANT SHARE',
-      'f5-h':'Self-contained HTML','f5-p':'One HTML file. Zero dependencies, no server, no runtime. Open it in any browser and it works. Share by attaching it to an email or PR comment.','f5-tag':'ZERO DEPS',
-      'f6-h':'Iterate by chat','f6-p':'"Add Redis", "move auth to the left", "use emerald for the API" — refine in natural language. No diagram editor to learn.','f6-tag':'CONVERSATIONAL',
+      'label-features':'Output',
+      'features-h2':'One file. <em>Everything inside.</em>',
+      'cmp-light':'Light','cmp-dark':'Dark',
+      'fv1-h':'Dual-theme output','fv1-p':"Every diagram ships with coordinated dark and light variable sets. The HTML theme toggle and the SVG @media prefers-color-scheme rule switch together — one file follows the reader's theme.",'fv1-tag':'LIGHT · DARK · ONE FILE',
+      'fv2-h':'One menu, every format','fv2-p':'PNG, JPEG, WebP, dual-theme SVG, WebM motion, or straight to the clipboard — every export renders natively in the browser from the same menu.',
+      'exp-clip-fmt':'Clipboard',
+      'f2-h':'Ultra-crisp 4× export','f2-p':'PNG, JPEG, WebP — all rasterized natively at up to 4× source resolution by the browser. No upsampling blur. Sharp on retina displays, slides, and print.',
+      'f5-h':'Self-contained HTML','f5-p':'One HTML file. Zero dependencies, no server, no runtime. Open it in any browser and it works. Share by attaching it to an email or PR comment.',
+      'f6-h':'Iterate by chat','f6-p':'"Add Redis", "move auth to the left", "use emerald for the API" — refine in natural language. No diagram editor to learn.',
       'f7-h':'Inspect and play real routes','f7-p':'Route Journey keeps the complete authored path visible while you inspect any stop or play one finite, reader-controlled pass over each exact incoming relationship.','f7-tag':'INSPECT · PLAY · PAUSE',
-      'f8-h':'Anticipate and share the exact story moment','f8-p':'Story Horizon distinguishes the exact next stop, while Semantic Story Carrier shows whether its one authored relationship is a call, data, event, security, or state transition. Pin any beat or share the same stable moment.','f8-tag':'FOLLOW · ANTICIPATE · SHARE',
-      'export-label':'Export formats',
-      'exp-png':'Transparent · 4× native','exp-jpg':'Theme bg · 4× native','exp-webp':'Small · 4× native','exp-svg':'Vector · dual-theme','exp-webm':'Motion · browser-native','exp-clip-fmt':'Clipboard','exp-clip':'Copy PNG · instant paste',
-      'label-palette':'Design System',
-      'palette-h2':'A semantic color language for infrastructure.',
+      'label-palette':'Design system',
+      'palette-h2':'Color that <em>means something.</em>',
       'palette-body':'Seven component types. Each with coordinated dark and light variants that switch together via the theme toggle.',
       'chip-frontend':'Frontend','chip-frontend-use':'Client apps, browsers, mobile, UI',
       'chip-backend':'Backend','chip-backend-use':'Services, APIs, workers, daemons',
@@ -50,32 +54,40 @@
       'chip-security':'Security','chip-security-use':'Auth, secrets, guards',
       'chip-bus':'Message Bus','chip-bus-use':'Kafka, RabbitMQ, SNS',
       'chip-external':'External','chip-external-use':'Users, 3rd parties, generic',
-      'label-qs':'Quick Start',
-      'qs-h2':'Up and running<br>in three steps.',
-      'qs-body':'One checked Skill for Cursor, Claude Code, Codex, and OpenCode. Their switcher generates exact commands.',
-      'step1-h':'Install in one command','step1-p':'Run <code>npx skills add tt-a1i/archify -g</code>, or open the <a href="start.html?agent=cursor&amp;type=architecture">agent-aware quick start</a> for an exact Cursor, Codex, Claude Code, or OpenCode command.',
+      'label-qs':'Quick start',
+      'qs-h2':'Three steps. <em>One command.</em>',
+      'qs-body':'One checked Skill for Claude Code, Codex, Cursor, OpenCode, and GitHub Copilot. Pick your agent for the exact command.',
+      'term-c1':'# Install globally for your agent','term-c2':'# Or try it once with Codex, no permanent install','term-c3':'# Then just ask',
+      'term-ask':'› Use Archify to draw our checkout service: web, API, Redis cache, Postgres, Stripe webhook.',
+      'step1-h':'Install in one command','step1-p':'Run the command for your agent, or open the <a href="start.html?agent=cursor&amp;type=architecture">agent-aware quick start</a> for project-scoped installs.',
       'step2-h':'Describe your system','step2-p':'Describe components, connections, and cloud services — or ask your agent to analyze the repository first.',
       'step3-h':'Ask your agent to draw it','step3-p':'Tell your agent to use Archify. It generates a self-contained HTML file you can open in any browser and refine in chat.',
-      'kbd-label':'Keyboard shortcuts','kbd-guide':'Diagram guide','kbd-theme':'Toggle theme','kbd-find':'Find node / route endpoint','kbd-route':'Trace and inspect a route','kbd-radar':'Semantic radar','kbd-lens':'Compare semantic kinds','kbd-present':'Presentation stage','kbd-export':'Open export menu','kbd-focus':'Focus node','kbd-zoom':'Reading depth / reset','kbd-nav':'Navigate menu','kbd-close':'Close menu',
+      'kbd-label':'Inside every artifact','kbd-guide':'Diagram guide','kbd-theme':'Toggle theme','kbd-find':'Find node / route endpoint','kbd-route':'Trace, inspect, and play a route','kbd-radar':'Semantic radar','kbd-lens':'Compare semantic kinds','kbd-present':'Presentation stage','kbd-export':'Open export menu','kbd-focus':'Focus node','kbd-zoom':'Reading depth / reset','kbd-nav':'Navigate menu','kbd-close':'Close menu',
       'footer-meta':'stable &nbsp;·&nbsp; v[[ARCHIFY_VERSION]] &nbsp;·&nbsp; MIT License<br>Based on Cocoon-AI/architecture-diagram-generator',
       'cta-h':'Describe it once.<br><em>Share the map.</em>',
-      'cta-sub':'One command installs the checked skill for Cursor, Claude Code, Codex, or OpenCode — and your next diagram is a chat message away.',
-      'cta-install':'Install the skill',
+      'cta-sub':'One command installs the checked skill for your agent — and your next diagram is a chat message away.',
+      'cta-install':'Install the skill','cta-gh':'Star on GitHub',
       'footer-changelog':'Changelog','footer-license':'License','footer-community':'Community'
     },
     zh: {
       'nav-guide':'场景指南','nav-gallery':'验证作品集','nav-start':'快速上手','nav-community':'社区包','nav-install':'安装技能',
       'hero-badge':'Agent 技能 &nbsp;·&nbsp; 稳定版 &nbsp;·&nbsp; v[[ARCHIFY_VERSION]]',
-      'hero-h1':'用自然语言，<br>生成<em>可信的架构图。</em>',
-      'hero-sub':'在对话中描述你的系统，Archify 生成精美、可探索的 HTML 技术图——信息会按 MAP → READ → FULL 渐进展开，并内置语义镜头、路径故事、动态效果和超清导出。',
-      'hero-cta':'选择合适的图','hero-gallery':'查看验证作品集',
-      'proof-live':'实时成品','proof-status':'自动生成 · 检查通过 · 可交互','proof-receipt':'真实作品集成品 · 9/9 项验证通过','proof-open':'打开完整成品','proof-hint':'打开稳定的聚焦、语义镜头或路径链接，检查同一条作者关系。',
-      'rail-label':'实时标本 · 点击加载',
-      'stat-types':'图表类型','stat-presets':'视觉预设','stat-themes':'深浅主题','stat-export':'原生导出倍率','stat-deps':'外部依赖',
+      'hero-agents':'Claude Code · Codex · Cursor · OpenCode · Copilot',
+      'hero-h1':'把系统讲清楚，<br>得到<em>可信的架构图。</em>',
+      'hero-sub':'Archify 是一个 Agent 技能：把一段对话描述，或者你的代码仓库，变成一个独立、可探索的 HTML 技术图。交付前自动校验，深浅主题齐备，随时导出。',
+      'hero-cta':'开始使用','hero-stars':'在 GitHub 开源','copy':'复制','copied':'已复制',
+      'demo-watch':'观看 35 秒演示','demo-title':'Archify 35 秒演示','demo-close':'关闭演示',
+      'tour-title':'实时成品导览',
+      'proof-live':'实时','proof-open':'打开完整成品',
+      'beat-0-k':'聚焦','beat-1-k':'上游','beat-2-k':'语义镜头','beat-3-k':'全景',
+      'beat-0-t':'聚焦一个节点，看清它驱动了什么。','beat-0-b':'在任意节点上按 Enter，或打开一个稳定链接，镜头会只保留它下游的一切。',
+      'beat-1-t':'反转方向，找到源头。','beat-1-b':'向上游追溯，看清喂给这一步的每个依赖。同一个文件、同一组作者关系，只改一次 hash。',
+      'beat-2-t':'按语义对比，而不是按方框。','beat-2-b':'语义镜头只保留你点名的类型——安全对数据、后端对存储——其余全部压暗。',
+      'beat-3-t':'再拉回整张图，依然清晰。','beat-3-b':'回到 MAP 层级：泳道、边界和每一条连线都在一个可读画面里。这就是真实成品，可以直接上手。',
+      'stat-types':'图表类型','stat-presets':'视觉预设','stat-checks':'每个成品的校验项','stat-export':'原生导出倍率','stat-deps':'运行时依赖',
       'label-types':'图表类型',
-      'types-h2':'五种方式，读懂你的系统。',
-      'types-body':'架构图、工作流、时序图、数据流图、状态机——描述需求，Archify 自动选择最合适的可视化语言。',
-      'label-gallery':'索引',
+      'types-h2':'五种语言，<br><em>读懂同一个系统。</em>',
+      'types-body':'架构图、工作流、时序图、数据流图、状态机——描述需求，Archify 选择最适合这个问题的可视化语言。',
       'types-more':'浏览完整作品集','types-more-sub':'实时成品 · 全部预设 · 全部图型',
       'arch-h':'架构图',
       'arch-p':'系统组件、云资源、数据库、缓存、服务、安全组及其连接关系，一图清晰呈现。',
@@ -88,20 +100,18 @@
       'flow-p':'数据管道、ETL/ELT、分析事件、PII 隔离、数仓同步、数据血缘及下游消费者——附治理边界。',
       'life-h':'生命周期图',
       'life-p':'状态机、对象生命周期、运行/订单/部署状态流转——含等待态、重试、取消和终态。',
-      'label-features':'功能特性',
-      'features-h2':'生产级输出，<br>零配置。',
-      'f1-h':'四套视觉身份','f1-p':'Classic、Signal Flow、Blueprint 和 Editorial 共用同一套几何契约；每套都提供协调的深浅主题并保持干净导出。','f1-tag':'4 套预设 · 2 套主题',
-      'f2-h':'超清 4× 导出','f2-p':'PNG、JPEG、WebP——由浏览器以最高 4 倍分辨率原生栅格化，无上采样模糊。视网膜屏、幻灯片、印刷均清晰。','f2-tag':'PNG · JPEG · WEBP',
-      'f3-h':'双主题 SVG','f3-p':'SVG 导出同时内置深色和浅色变量集，并附 @media prefers-color-scheme 规则。放入 GitHub README，自动跟随读者主题。','f3-tag':'矢量 · 自适应主题',
-      'f4-h':'复制到剪贴板','f4-p':'一键将 PNG 写入剪贴板，直接粘贴到 Slack、Notion、GitHub 或 Figma，无需手动保存。','f4-tag':'即时分享',
-      'f5-h':'独立 HTML 文件','f5-p':'单个 HTML 文件，零依赖、无需服务器或构建工具，任意浏览器打开即用。作为附件发邮件或贴 PR 评论均可。','f5-tag':'零依赖',
-      'f6-h':'对话式迭代','f6-p':'「加一个 Redis」「把鉴权移到左边」「API 用绿色」——用自然语言精调，无需学习任何图形编辑器。','f6-tag':'对话驱动',
+      'label-features':'输出',
+      'features-h2':'一个文件，<br><em>全部都在里面。</em>',
+      'cmp-light':'浅色','cmp-dark':'深色',
+      'fv1-h':'双主题输出','fv1-p':'每张图都内置协调的深色与浅色变量集：HTML 的主题开关与 SVG 的 @media prefers-color-scheme 规则同步切换——一个文件，自动跟随读者主题。','fv1-tag':'浅色 · 深色 · 单文件',
+      'fv2-h':'一个菜单，全部格式','fv2-p':'PNG、JPEG、WebP、双主题 SVG、WebM 动图，或直接复制到剪贴板——所有导出都在浏览器内原生渲染，同一个菜单完成。',
+      'exp-clip-fmt':'剪贴板',
+      'f2-h':'超清 4× 导出','f2-p':'PNG、JPEG、WebP——由浏览器以最高 4 倍分辨率原生栅格化，无上采样模糊。视网膜屏、幻灯片、印刷均清晰。',
+      'f5-h':'独立 HTML 文件','f5-p':'单个 HTML 文件，零依赖、无需服务器或构建工具，任意浏览器打开即用。作为附件发邮件或贴 PR 评论均可。',
+      'f6-h':'对话式迭代','f6-p':'「加一个 Redis」「把鉴权移到左边」「API 用绿色」——用自然语言精调，无需学习任何图形编辑器。',
       'f7-h':'检查并播放真实路径','f7-p':'Route Journey 始终保留完整作者路径，可逐站检查，也可沿每条精确入向关系播放一次由读者控制的有限旅程。','f7-tag':'检查 · 播放 · 暂停',
-      'f8-h':'跟随并分享精确故事时刻','f8-p':'Story Horizon 指出唯一下一站，Semantic Story Carrier 则说明这条真实关系传递的是调用、数据、事件、安全还是状态变化；任意 beat 都可钉住或稳定分享。','f8-tag':'跟随 · 钉住 · 分享',
-      'export-label':'导出格式',
-      'exp-png':'透明底 · 4× 分辨率','exp-jpg':'主题背景 · 4× 分辨率','exp-webp':'体积小 · 4× 分辨率','exp-svg':'矢量 · 双主题','exp-webm':'动态 · 浏览器原生','exp-clip-fmt':'剪贴板','exp-clip':'复制 PNG · 即时粘贴',
       'label-palette':'设计系统',
-      'palette-h2':'为基础设施而生的语义色彩系统。',
+      'palette-h2':'每种颜色，<br><em>都有含义。</em>',
       'palette-body':'七种组件类型，各有深色与浅色协调变体，随主题切换同步变换。',
       'chip-frontend':'前端','chip-frontend-use':'客户端、浏览器、移动端、UI',
       'chip-backend':'后端','chip-backend-use':'服务、API、Worker、守护进程',
@@ -111,24 +121,30 @@
       'chip-bus':'消息总线','chip-bus-use':'Kafka、RabbitMQ、SNS',
       'chip-external':'外部系统','chip-external-use':'用户、第三方、通用外部',
       'label-qs':'快速开始',
-      'qs-h2':'三步上手，<br>即刻运行。',
-      'qs-body':'同一份经过检查的 Skill 可用于 Cursor、Claude Code、Codex 和 OpenCode，切换器会生成准确命令。',
-      'step1-h':'一条命令安装','step1-p':'运行 <code>npx skills add tt-a1i/archify -g</code>，或打开<a href="start.html?agent=cursor&amp;type=architecture">可切换 Agent 的快速开始页</a>，获取准确的 Cursor、Codex、Claude Code 或 OpenCode 命令。',
+      'qs-h2':'三步上手，<br><em>一条命令。</em>',
+      'qs-body':'同一份经过检查的 Skill 可用于 Claude Code、Codex、Cursor、OpenCode 和 GitHub Copilot。选择你的 Agent，获取准确命令。',
+      'term-c1':'# 为你的 Agent 全局安装','term-c2':'# 或者用临时副本在 Codex 中试一次','term-c3':'# 然后直接说',
+      'term-ask':'› 用 Archify 画一下我们的结算服务：Web、API、Redis 缓存、Postgres、Stripe 回调。',
+      'step1-h':'一条命令安装','step1-p':'运行对应 Agent 的命令，或打开<a href="start.html?agent=cursor&amp;type=architecture">可切换 Agent 的快速开始页</a>获取项目级安装命令。',
       'step2-h':'描述你的系统','step2-p':'描述组件、连接关系和云服务，也可以先让 agent 分析代码仓库。',
       'step3-h':'让 agent 绘制','step3-p':'告诉 agent 使用 Archify，它会生成可在任意浏览器打开的单文件 HTML，并可继续在对话中迭代。',
-      'kbd-label':'键盘快捷键','kbd-guide':'图表指南','kbd-theme':'切换主题','kbd-find':'查找节点 / 路径端点','kbd-route':'探查并检查路径','kbd-radar':'语义雷达','kbd-lens':'对比语义类型','kbd-present':'演示舞台','kbd-export':'打开导出菜单','kbd-focus':'聚焦节点','kbd-zoom':'阅读层级 / 复位','kbd-nav':'菜单导航','kbd-close':'关闭菜单',
+      'kbd-label':'每个成品都内置','kbd-guide':'图表指南','kbd-theme':'切换主题','kbd-find':'查找节点 / 路径端点','kbd-route':'探查、检查并播放路径','kbd-radar':'语义雷达','kbd-lens':'对比语义类型','kbd-present':'演示舞台','kbd-export':'打开导出菜单','kbd-focus':'聚焦节点','kbd-zoom':'阅读层级 / 复位','kbd-nav':'菜单导航','kbd-close':'关闭菜单',
       'footer-meta':'稳定版 &nbsp;·&nbsp; v[[ARCHIFY_VERSION]] &nbsp;·&nbsp; MIT 许可证<br>基于 Cocoon-AI/architecture-diagram-generator',
       'cta-h':'描述一次，<br><em>分享这张图。</em>',
-      'cta-sub':'一条命令即可为 Cursor、Claude Code、Codex 或 OpenCode 安装经过检查的技能——你的下一张架构图，只差一句对话。',
-      'cta-install':'安装技能',
+      'cta-sub':'一条命令为你的 Agent 安装经过检查的技能——下一张架构图，只差一句对话。',
+      'cta-install':'安装技能','cta-gh':'在 GitHub 上 Star',
       'footer-changelog':'更新日志','footer-license':'许可证','footer-community':'社区包'
     }
   };
 
+  /* Each proof carries four camera beats (focus → upstream → lens → map) that
+     the pinned stage applies by replacing the artifact's hash; the viewer
+     animates its own camera on hashchange. */
   const PROOFS = {
     signal: {
       artifact: 'gallery/artifacts/agent-tool-call.workflow.html',
       hash: '#focus=planner&reach=downstream',
+      beats: ['#focus=planner&reach=downstream', '#focus=approval&reach=upstream', '#lens=security~database', '#'],
       iframeTitle: { en: 'Agent Tool Call live Archify proof', zh: '智能体工具调用 Archify 实时成品' },
       name: { en: 'Agent Tool Call', zh: '智能体工具调用' },
       meta: { en: 'Workflow · Signal Flow · 12 nodes · 11 edges', zh: '工作流 · Signal Flow · 12 节点 · 11 条关系' },
@@ -137,6 +153,7 @@
     blueprint: {
       artifact: 'gallery/artifacts/production-deployment.architecture.html',
       hash: '#lens=backend~database',
+      beats: ['#focus=gateway&reach=downstream', '#focus=postgres&reach=upstream', '#lens=backend~database', '#'],
       iframeTitle: { en: 'Production Deployment live Archify proof', zh: '生产部署架构 Archify 实时成品' },
       name: { en: 'Production Deployment', zh: '生产部署' },
       meta: { en: 'Architecture · Blueprint · 12 nodes · 12 edges', zh: '架构图 · Blueprint · 12 节点 · 12 条关系' },
@@ -146,6 +163,7 @@
       artifact: 'gallery/artifacts/cache-miss.sequence.html',
       hash: '#route=web~db',
       embedHash: '#focus=web&reach=downstream',
+      beats: ['#focus=web&reach=downstream', '#focus=db&reach=upstream', '#lens=database~security', '#'],
       iframeTitle: { en: 'Cache Miss Request live Archify proof', zh: '缓存未命中请求 Archify 实时成品' },
       name: { en: 'Cache Miss', zh: '缓存未命中' },
       meta: { en: 'Sequence · Classic · 7 participants · 12 messages', zh: '时序图 · Classic · 7 个参与者 · 12 条消息' },
@@ -155,25 +173,46 @@
 
   let lang = ArchifySiteLanguage.read();
   let activeProof = 'signal';
-  const btnLang = document.getElementById('btn-lang');
-  const proofStage = document.getElementById('hero-proof-stage');
-  const proofFrame = document.getElementById('hero-proof-frame');
-  const proofPanel = document.getElementById('hero-proof-panel');
-  const proofOpen = document.getElementById('proof-open');
-  const proofMeta = document.getElementById('proof-meta');
-  const proofTitle = document.getElementById('proof-title');
+  let beat = 0;
+  const $ = id => document.getElementById(id);
+  const btnLang = $('btn-lang');
+  const proofStage = $('hero-proof-stage');
+  const proofFrame = $('hero-proof-frame');
+  const proofPanel = $('hero-proof-panel');
+  const proofOpen = $('proof-open');
+  const proofMeta = $('proof-meta');
+  const proofTitle = $('proof-title');
+  const addressFile = $('address-file');
+  const addressHash = $('address-hash');
+  const beatCard = document.querySelector('.beat-card');
+  const beatTicks = [...document.querySelectorAll('.beat-tick')];
 
   function proofEmbedUrl(proof) {
     return `${proof.artifact}?embed=1&theme=dark${proof.embedHash || proof.hash}`;
   }
 
-  function fillRail() {
-    document.querySelectorAll('.spec-card').forEach(card => {
-      const proof = PROOFS[card.dataset.proof];
-      if (!proof) return;
-      card.querySelector('.spec-name').textContent = proof.name[lang];
-      card.querySelector('.spec-meta').textContent = proof.meta[lang];
-    });
+  function replaceFrameHash(hash) {
+    try {
+      const loc = proofFrame.contentWindow.location;
+      if (loc.protocol === 'about:' || loc.hash === hash) return;
+      loc.replace(loc.pathname + loc.search + hash);
+    } catch (_) {}
+  }
+
+  function renderBeat(next, { apply = true } = {}) {
+    const proof = PROOFS[activeProof];
+    const hash = proof.beats[next];
+    const changed = next !== beat;
+    beat = next;
+    beatTicks.forEach((tick, i) => tick.setAttribute('aria-pressed', String(i === next)));
+    $('beat-title').textContent = LANGS[lang][`beat-${next}-t`];
+    $('beat-body').textContent = LANGS[lang][`beat-${next}-b`];
+    addressHash.textContent = hash;
+    if (changed) {
+      beatCard.classList.remove('is-swapping'); void beatCard.offsetWidth; beatCard.classList.add('is-swapping');
+      addressHash.classList.remove('is-flash'); void addressHash.offsetWidth; addressHash.classList.add('is-flash');
+    }
+    if (apply && changed) replaceFrameHash(hash);
   }
 
   function renderProof(key, { focus = false } = {}) {
@@ -184,23 +223,26 @@
       const selected = tab.dataset.proof === key;
       tab.setAttribute('aria-selected', String(selected));
       tab.tabIndex = selected ? 0 : -1;
+      tab.querySelector('.spec-name').textContent = PROOFS[tab.dataset.proof].name[lang];
       if (selected && focus) tab.focus();
     });
-    const selectedTab = document.querySelector(`.spec-card[data-proof="${key}"]`);
-    proofPanel.setAttribute('aria-labelledby', selectedTab.id);
+    proofPanel.setAttribute('aria-labelledby', `proof-tab-${key}`);
     proofOpen.href = `${proof.artifact}?present=1${proof.hash}`;
     proofMeta.textContent = proof.meta[lang];
     proofTitle.textContent = proof.title[lang];
     proofFrame.title = proof.iframeTitle[lang];
+    addressFile.textContent = proof.artifact.split('/').pop();
     if (proofFrame.dataset.proof !== key) {
       proofStage.classList.add('is-loading');
       proofFrame.dataset.proof = key;
       proofFrame.src = proofEmbedUrl(proof);
     }
+    renderBeat(beat, { apply: false });
   }
 
   proofFrame.addEventListener('load', () => {
     proofStage.classList.remove('is-loading');
+    replaceFrameHash(PROOFS[activeProof].beats[beat]);
   });
   document.querySelectorAll('.spec-card').forEach(tab => {
     tab.addEventListener('click', () => renderProof(tab.dataset.proof));
@@ -228,16 +270,13 @@
       const v = dict[el.dataset.i18n];
       if (v !== undefined) el.innerHTML = v;
     });
-    fillRail();
     renderProof(activeProof);
-    document.getElementById('code-en').style.display = lang === 'en' ? '' : 'none';
-    document.getElementById('code-zh').style.display = lang === 'zh' ? '' : 'none';
   }
 
   btnLang.addEventListener('click', () => applyLang(lang === 'en' ? 'zh' : 'en'));
   applyLang(lang);
 
-  /* ══ Intersection observer ══ */
+  /* ══ Reveal on enter ══ */
   if ('IntersectionObserver' in window) {
     const obs = new IntersectionObserver(es => {
       es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
@@ -246,3 +285,116 @@
   } else {
     document.querySelectorAll('.fade-up').forEach(el => el.classList.add('visible'));
   }
+
+  /* ══ Stage orchestration — window flattens as it arrives, then the pinned
+     scroll distance is split into four camera beats ══ */
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const stage = $('tour');
+  const BEATS = beatTicks.length;
+
+  function stageProgress() {
+    const rect = stage.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const enter = Math.min(1, Math.max(0, 1 - rect.top / (vh * 0.9)));
+    const travel = Math.max(1, rect.height - vh);
+    const pinned = Math.min(1, Math.max(0, -rect.top / travel));
+    return { enter, pinned, rect, travel };
+  }
+
+  function applyScroll() {
+    const { enter, pinned } = stageProgress();
+    if (!reducedMotion.matches) stage.style.setProperty('--enter', enter.toFixed(3));
+    const span = pinned * BEATS;
+    const next = Math.min(BEATS - 1, Math.floor(span));
+    beatTicks.forEach((tick, i) => tick.style.setProperty('--fill', `${Math.round(Math.min(1, Math.max(0, span - i)) * 100)}%`));
+    if (next !== beat) renderBeat(next);
+  }
+
+  beatTicks.forEach((tick, i) => tick.addEventListener('click', () => {
+    const { rect, travel } = stageProgress();
+    const top = window.scrollY + rect.top + travel * ((i + 0.5) / BEATS);
+    window.scrollTo({ top, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+  }));
+
+  let scrollTick = false;
+  const onScroll = () => {
+    if (scrollTick) return;
+    scrollTick = true;
+    requestAnimationFrame(() => { scrollTick = false; applyScroll(); });
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  applyScroll();
+
+  /* ══ Diagram types — index list drives the preview plate ══ */
+  const typeItems = [...document.querySelectorAll('.type-item')];
+  const typeImgs = [...document.querySelectorAll('.type-plate img')];
+  function selectType(key) {
+    typeItems.forEach(item => {
+      const on = item.dataset.type === key;
+      item.classList.toggle('is-active', on);
+      item.querySelector('button').setAttribute('aria-pressed', String(on));
+    });
+    typeImgs.forEach(img => img.classList.toggle('is-active', img.dataset.type === key));
+  }
+  typeItems.forEach(item => {
+    const button = item.querySelector('button');
+    button.addEventListener('click', () => selectType(item.dataset.type));
+    button.addEventListener('mouseenter', () => { if (window.matchMedia('(hover: hover)').matches) selectType(item.dataset.type); });
+  });
+
+  /* ══ Light/dark compare ══ */
+  const compareStage = $('compare-stage');
+  $('compare-range').addEventListener('input', event => compareStage.style.setProperty('--split', `${event.target.value}%`));
+
+  /* ══ Agent command switcher ══ */
+  const agentCommand = $('agent-command');
+  const agentTabs = [...document.querySelectorAll('.agent-tabs button')];
+  function selectAgent(tab, focus) {
+    agentTabs.forEach(t => { const on = t === tab; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+    agentCommand.textContent = `npx -y skills add tt-a1i/archify --skill archify --agent ${tab.dataset.agent} --global --copy --yes`;
+    if (focus) tab.focus();
+  }
+  agentTabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => selectAgent(tab));
+    tab.addEventListener('keydown', event => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
+      if (!step) return;
+      event.preventDefault();
+      selectAgent(agentTabs[(i + step + agentTabs.length) % agentTabs.length], true);
+    });
+  });
+
+  /* ══ Copy buttons ══ */
+  document.querySelectorAll('.cmd-copy').forEach(button => button.addEventListener('click', async () => {
+    const text = button.dataset.copyText || $(button.dataset.copyFrom).textContent;
+    try { await navigator.clipboard.writeText(text); } catch (_) { return; }
+    const label = button.querySelector('.cmd-copy-label');
+    button.classList.add('is-copied');
+    label.textContent = LANGS[lang].copied;
+    setTimeout(() => { button.classList.remove('is-copied'); label.textContent = LANGS[lang].copy; }, 1600);
+  }));
+
+  /* ══ Demo lightbox — zero network cost until the trigger is pressed ══ */
+  const DEMO_SRC = 'https://github.com/user-attachments/assets/78570807-ba1d-4737-953f-55504a378a87';
+  const demoOpen = $('demo-open');
+  const demoDialog = $('demo-dialog');
+  const demoVideo = $('demo-video');
+
+  demoOpen.addEventListener('click', () => {
+    demoVideo.src = DEMO_SRC;
+    document.documentElement.classList.add('demo-lock');
+    demoDialog.showModal();
+    demoVideo.play().catch(() => {});
+  });
+  $('demo-close').addEventListener('click', () => demoDialog.close());
+  demoDialog.addEventListener('click', event => {
+    if (event.target === demoDialog) demoDialog.close();
+  });
+  demoDialog.addEventListener('close', () => {
+    demoVideo.pause();
+    demoVideo.removeAttribute('src');
+    demoVideo.load();
+    document.documentElement.classList.remove('demo-lock');
+    demoOpen.focus();
+  });
