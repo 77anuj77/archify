@@ -97,8 +97,8 @@
     .hero-works b { font-weight:500; color:var(--text-2); }
     .hero-stars { display:inline-flex; align-items:center; gap:.45rem; padding-left:1.5rem; border-left:1px solid var(--line-hi); color:var(--text-3); text-decoration:none; transition:color .18s var(--ease-out); }
     .hero-stars:hover { color:var(--text); }
-    .stars-count { font-family:var(--font-mono); font-weight:500; color:var(--text); }
-    .stars-count::before { content:'★ '; color:#fbbf24; }
+    .stars-count { font-weight:600; font-variant-numeric:tabular-nums; color:var(--text); }
+    .hero-stars .stars-count::before { display:none; }
 
     /* ══════════════════════════════════════
        STAGE — pinned live artifact window; scroll drives the camera beats.
