@@ -16,23 +16,15 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
 
   <!-- HERO — centered statement; the live artifact window peeks in below the fold line -->
   <section class="hero" data-proof-aperture="first-fold">
-    <div class="hero-aura" aria-hidden="true">
-      <svg class="hero-traces" viewBox="0 0 1440 760" preserveAspectRatio="xMidYMid slice">
-        <path class="trace t1" d="M-20 610 H260 Q300 610 300 570 V430 Q300 390 340 390 H520"/>
-        <path class="trace t2" d="M1460 560 H1180 Q1140 560 1140 520 V300 Q1140 260 1100 260 H930"/>
-        <path class="trace t3" d="M-20 180 H140 Q180 180 180 220 V300 Q180 340 220 340 H380"/>
-        <path class="trace t4" d="M1460 120 H1290 Q1250 120 1250 160 V200"/>
-      </svg>
-    </div>
+    <div class="hero-aura" aria-hidden="true"><div class="hero-horizon"></div></div>
     <div class="hero-copy">
       <a class="hero-eyebrow fade-up" href="https://github.com/tt-a1i/archify/blob/main/CHANGELOG.md" target="_blank" rel="noopener">
-        <span class="pulse-dot" aria-hidden="true"></span>
-        <span data-i18n="hero-badge">Agent Skill &nbsp;·&nbsp; stable &nbsp;·&nbsp; v{version}</span>
-        <span class="eyebrow-sep" aria-hidden="true"></span>
-        <span class="eyebrow-agents" data-i18n="hero-agents">Claude Code · Codex · Cursor · OpenCode · Copilot</span>
+        <span class="eyebrow-tag">v{version}</span>
+        <span data-i18n="hero-badge">Stable Agent Skill · see what's new</span>
+        <span class="eyebrow-arrow" aria-hidden="true">→</span>
       </a>
       <h1 class="fade-up d1" data-i18n="hero-h1">Talk through your system.<br>Get a map <em>you can trust.</em></h1>
-      <p class="hero-sub fade-up d2" data-i18n="hero-sub">Archify is an agent skill that turns a chat description — or your repository — into one self-contained, explorable HTML diagram. Validated before it ships, themed both ways, export-ready.</p>
+      <p class="hero-sub fade-up d2" data-i18n="hero-sub">Describe a system in chat, or point your agent at a repo. Archify returns one self-contained, explorable HTML diagram — validated before it ships.</p>
       <div class="hero-actions fade-up d3">
         <div class="cmd-chip">
           <span class="cmd-prompt" aria-hidden="true">$</span>
@@ -51,11 +43,14 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
           <span data-i18n="demo-watch">Watch the 35s demo</span>
         </button>
       </div>
-      <a class="hero-stars fade-up d4" id="hero-stars" href="https://github.com/tt-a1i/archify" target="_blank" rel="noopener">
-        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .2a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.66 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 .2Z"/></svg>
-        <span class="stars-count" data-gh-stars hidden></span>
-        <span data-i18n="hero-stars">Open source on GitHub</span>
-      </a>
+      <div class="hero-meta fade-up d4">
+        <span class="hero-works"><span data-i18n="hero-works">Works with</span> <b>Claude Code</b> · <b>Codex</b> · <b>Cursor</b> · <b>OpenCode</b> · <b>Copilot</b></span>
+        <a class="hero-stars" href="https://github.com/tt-a1i/archify" target="_blank" rel="noopener">
+          <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .2a8 8 0 0 0-2.53 15.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.03 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.66 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 8 .2Z"/></svg>
+          <span class="stars-count" data-gh-stars hidden></span>
+          <span data-i18n="hero-stars">stars on GitHub</span>
+        </a>
+      </div>
     </div>
   </section>
 
@@ -79,7 +74,7 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
           </div>
           <div class="window-address" aria-hidden="true">
             <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M4 5.5V4a2 2 0 1 1 4 0v1.5" stroke="currentColor" stroke-width="1.2"/></svg>
-            <span id="address-file">agent-tool-call.workflow.html</span><b id="address-hash">#focus=planner&amp;reach=downstream</b>
+            <span id="address-file">agent-tool-call.workflow.html</span><b id="address-hash"></b>
           </div>
           <a class="proof-open" id="proof-open" href="gallery/artifacts/agent-tool-call.workflow.html?present=1#focus=planner&amp;reach=downstream" target="_blank" rel="noopener">
             <span data-i18n="proof-open">Open artifact</span><span aria-hidden="true">↗</span>
@@ -90,14 +85,14 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
         </div>
         <div class="beat-card" aria-live="polite">
           <div class="beat-rail" role="group" aria-label="Camera beats">
-            <button class="beat-tick" type="button" data-beat="0" aria-pressed="true"><span data-i18n="beat-0-k">Focus</span></button>
-            <button class="beat-tick" type="button" data-beat="1" aria-pressed="false"><span data-i18n="beat-1-k">Upstream</span></button>
-            <button class="beat-tick" type="button" data-beat="2" aria-pressed="false"><span data-i18n="beat-2-k">Lens</span></button>
-            <button class="beat-tick" type="button" data-beat="3" aria-pressed="false"><span data-i18n="beat-3-k">Map</span></button>
+            <button class="beat-tick" type="button" data-beat="0" aria-pressed="true"><span data-i18n="beat-0-k">Map</span></button>
+            <button class="beat-tick" type="button" data-beat="1" aria-pressed="false"><span data-i18n="beat-1-k">Focus</span></button>
+            <button class="beat-tick" type="button" data-beat="2" aria-pressed="false"><span data-i18n="beat-2-k">Upstream</span></button>
+            <button class="beat-tick" type="button" data-beat="3" aria-pressed="false"><span data-i18n="beat-3-k">Lens</span></button>
           </div>
           <p class="beat-meta"><span class="proof-live" data-i18n="proof-live">Live proof</span><span id="proof-meta">Workflow · Signal Flow · 12 nodes · 11 edges</span></p>
-          <h3 class="beat-title" id="beat-title">Focus one node, see what it drives.</h3>
-          <p class="beat-body" id="beat-body">Press Enter on any node — or open a stable link — and the camera isolates everything downstream of it.</p>
+          <h3 class="beat-title" id="beat-title">The whole system, in one readable frame.</h3>
+          <p class="beat-body" id="beat-body">This is the real generated artifact, not a screenshot. Lanes, boundaries, and every authored edge — scroll to move its camera.</p>
           <strong class="sr-only" id="proof-title">Agent Tool Call — policy, execution, recovery, and evidence</strong>
         </div>
       </div>

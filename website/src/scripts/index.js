@@ -5,19 +5,18 @@
   const LANGS = {
     en: {
       'nav-guide':'Guide','nav-gallery':'Proof Lab','nav-start':'Start','nav-community':'Community','nav-install':'Install Skill',
-      'hero-badge':'Agent Skill &nbsp;·&nbsp; stable &nbsp;·&nbsp; v[[ARCHIFY_VERSION]]',
-      'hero-agents':'Claude Code · Codex · Cursor · OpenCode · Copilot',
+      'hero-badge':"Stable Agent Skill · see what's new",'hero-works':'Works with',
       'hero-h1':'Talk through your system.<br>Get a map <em>you can trust.</em>',
-      'hero-sub':'Archify is an agent skill that turns a chat description — or your repository — into one self-contained, explorable HTML diagram. Validated before it ships, themed both ways, export-ready.',
-      'hero-cta':'Get started','hero-stars':'Open source on GitHub','copy':'Copy','copied':'Copied',
+      'hero-sub':'Describe a system in chat, or point your agent at a repo. Archify returns one self-contained, explorable HTML diagram — validated before it ships.',
+      'hero-cta':'Get started','hero-stars':'stars on GitHub','copy':'Copy','copied':'Copied',
       'demo-watch':'Watch the 35s demo','demo-title':'Archify 35-second demo','demo-close':'Close demo',
       'tour-title':'Live artifact tour',
       'proof-live':'Live','proof-open':'Open artifact',
-      'beat-0-k':'Focus','beat-1-k':'Upstream','beat-2-k':'Lens','beat-3-k':'Map',
-      'beat-0-t':'Focus one node, see what it drives.','beat-0-b':'Press Enter on any node — or open a stable link — and the camera isolates everything downstream of it.',
-      'beat-1-t':'Flip the reach. Find the cause.','beat-1-b':'Trace upstream to every dependency that feeds a step. Same file, same authored relationships, one hash change.',
-      'beat-2-t':'Compare by meaning, not by box.','beat-2-b':'Lens keeps only the semantic kinds you name — security against data, backend against storage — and quiets the rest.',
-      'beat-3-t':'Then the whole system, still crisp.','beat-3-b':'Pull back to MAP depth: lanes, boundaries, and every edge in one readable frame. This is the real artifact — try it.',
+      'beat-0-k':'Map','beat-1-k':'Focus','beat-2-k':'Upstream','beat-3-k':'Lens',
+      'beat-0-t':'The whole system, in one readable frame.','beat-0-b':'This is the real generated artifact, not a screenshot. Lanes, boundaries, and every authored edge — scroll to move its camera.',
+      'beat-1-t':'Focus one node, see what it drives.','beat-1-b':'Press Enter on any node — or open a stable link — and the camera isolates everything downstream of it.',
+      'beat-2-t':'Flip the reach. Find the cause.','beat-2-b':'Trace upstream to every dependency that feeds a step. Same file, same authored relationships, one hash change.',
+      'beat-3-t':'Compare by meaning, not by box.','beat-3-b':'Lens keeps only the semantic kinds you name — security against data, backend against storage — and quiets the rest.',
       'stat-types':'Diagram types','stat-presets':'Visual presets','stat-checks':'Validation checks per artifact','stat-export':'Native export scale','stat-deps':'Runtime dependencies',
       'label-types':'Diagram types',
       'types-h2':'Five languages for <em>one system.</em>',
@@ -71,19 +70,18 @@
     },
     zh: {
       'nav-guide':'场景指南','nav-gallery':'验证作品集','nav-start':'快速上手','nav-community':'社区包','nav-install':'安装技能',
-      'hero-badge':'Agent 技能 &nbsp;·&nbsp; 稳定版 &nbsp;·&nbsp; v[[ARCHIFY_VERSION]]',
-      'hero-agents':'Claude Code · Codex · Cursor · OpenCode · Copilot',
+      'hero-badge':'稳定版 Agent 技能 · 查看更新','hero-works':'支持',
       'hero-h1':'把系统讲清楚，<br>得到<em>可信的架构图。</em>',
-      'hero-sub':'Archify 是一个 Agent 技能：把一段对话描述，或者你的代码仓库，变成一个独立、可探索的 HTML 技术图。交付前自动校验，深浅主题齐备，随时导出。',
-      'hero-cta':'开始使用','hero-stars':'在 GitHub 开源','copy':'复制','copied':'已复制',
+      'hero-sub':'在对话里描述系统，或让 Agent 直接读代码仓库。Archify 交付一个独立、可探索的 HTML 技术图——交付前已自动校验。',
+      'hero-cta':'开始使用','hero-stars':'GitHub Star','copy':'复制','copied':'已复制',
       'demo-watch':'观看 35 秒演示','demo-title':'Archify 35 秒演示','demo-close':'关闭演示',
       'tour-title':'实时成品导览',
       'proof-live':'实时','proof-open':'打开完整成品',
-      'beat-0-k':'聚焦','beat-1-k':'上游','beat-2-k':'语义镜头','beat-3-k':'全景',
-      'beat-0-t':'聚焦一个节点，看清它驱动了什么。','beat-0-b':'在任意节点上按 Enter，或打开一个稳定链接，镜头会只保留它下游的一切。',
-      'beat-1-t':'反转方向，找到源头。','beat-1-b':'向上游追溯，看清喂给这一步的每个依赖。同一个文件、同一组作者关系，只改一次 hash。',
-      'beat-2-t':'按语义对比，而不是按方框。','beat-2-b':'语义镜头只保留你点名的类型——安全对数据、后端对存储——其余全部压暗。',
-      'beat-3-t':'再拉回整张图，依然清晰。','beat-3-b':'回到 MAP 层级：泳道、边界和每一条连线都在一个可读画面里。这就是真实成品，可以直接上手。',
+      'beat-0-k':'全景','beat-1-k':'聚焦','beat-2-k':'上游','beat-3-k':'语义镜头',
+      'beat-0-t':'整个系统，一屏读完。','beat-0-b':'这是真实生成的成品，不是截图。泳道、边界和每一条作者连线都在这里——继续滚动，移动它的镜头。',
+      'beat-1-t':'聚焦一个节点，看清它驱动了什么。','beat-1-b':'在任意节点上按 Enter，或打开一个稳定链接，镜头会只保留它下游的一切。',
+      'beat-2-t':'反转方向，找到源头。','beat-2-b':'向上游追溯，看清喂给这一步的每个依赖。同一个文件、同一组作者关系，只改一次 hash。',
+      'beat-3-t':'按语义对比，而不是按方框。','beat-3-b':'语义镜头只保留你点名的类型——安全对数据、后端对存储——其余全部压暗。',
       'stat-types':'图表类型','stat-presets':'视觉预设','stat-checks':'每个成品的校验项','stat-export':'原生导出倍率','stat-deps':'运行时依赖',
       'label-types':'图表类型',
       'types-h2':'五种语言，<br><em>读懂同一个系统。</em>',
@@ -144,7 +142,7 @@
     signal: {
       artifact: 'gallery/artifacts/agent-tool-call.workflow.html',
       hash: '#focus=planner&reach=downstream',
-      beats: ['#focus=planner&reach=downstream', '#focus=approval&reach=upstream', '#lens=security~database', '#'],
+      beats: ['#', '#focus=planner&reach=downstream', '#focus=approval&reach=upstream', '#lens=security~database'],
       iframeTitle: { en: 'Agent Tool Call live Archify proof', zh: '智能体工具调用 Archify 实时成品' },
       name: { en: 'Agent Tool Call', zh: '智能体工具调用' },
       meta: { en: 'Workflow · Signal Flow · 12 nodes · 11 edges', zh: '工作流 · Signal Flow · 12 节点 · 11 条关系' },
@@ -153,7 +151,7 @@
     blueprint: {
       artifact: 'gallery/artifacts/production-deployment.architecture.html',
       hash: '#lens=backend~database',
-      beats: ['#focus=gateway&reach=downstream', '#focus=postgres&reach=upstream', '#lens=backend~database', '#'],
+      beats: ['#', '#focus=gateway&reach=downstream', '#focus=postgres&reach=upstream', '#lens=backend~database'],
       iframeTitle: { en: 'Production Deployment live Archify proof', zh: '生产部署架构 Archify 实时成品' },
       name: { en: 'Production Deployment', zh: '生产部署' },
       meta: { en: 'Architecture · Blueprint · 12 nodes · 12 edges', zh: '架构图 · Blueprint · 12 节点 · 12 条关系' },
@@ -163,7 +161,7 @@
       artifact: 'gallery/artifacts/cache-miss.sequence.html',
       hash: '#route=web~db',
       embedHash: '#focus=web&reach=downstream',
-      beats: ['#focus=web&reach=downstream', '#focus=db&reach=upstream', '#lens=database~security', '#'],
+      beats: ['#', '#focus=web&reach=downstream', '#focus=db&reach=upstream', '#lens=database~security'],
       iframeTitle: { en: 'Cache Miss Request live Archify proof', zh: '缓存未命中请求 Archify 实时成品' },
       name: { en: 'Cache Miss', zh: '缓存未命中' },
       meta: { en: 'Sequence · Classic · 7 participants · 12 messages', zh: '时序图 · Classic · 7 个参与者 · 12 条消息' },
@@ -207,7 +205,7 @@
     beatTicks.forEach((tick, i) => tick.setAttribute('aria-pressed', String(i === next)));
     $('beat-title').textContent = LANGS[lang][`beat-${next}-t`];
     $('beat-body').textContent = LANGS[lang][`beat-${next}-b`];
-    addressHash.textContent = hash;
+    addressHash.textContent = hash === '#' ? '' : hash;
     if (changed) {
       beatCard.classList.remove('is-swapping'); void beatCard.offsetWidth; beatCard.classList.add('is-swapping');
       addressHash.classList.remove('is-flash'); void addressHash.offsetWidth; addressHash.classList.add('is-flash');
