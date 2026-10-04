@@ -6,7 +6,7 @@
     en: {
       'nav-guide':'Guide','nav-gallery':'Proof Lab','nav-start':'Start','nav-community':'Community','nav-install':'Install Skill',
       'hero-badge':"Stable Agent Skill · see what's new",'hero-works':'Works with',
-      'hero-h1':'Talk through your system.<br>Get a map <em>you can trust.</em>',
+      'hero-h1':'<span class="l">Talk through your system.</span><span class="l">Get a map <em>you can trust.</em></span>',
       'hero-sub':'Describe a system in chat, or point your agent at a repo. Archify returns one self-contained, explorable HTML diagram — validated before it ships.',
       'hero-cta':'Get started','hero-stars':'stars on GitHub','copy':'Copy','copied':'Copied',
       'demo-watch':'Watch the 35s demo','demo-title':'Archify 35-second demo','demo-close':'Close demo',
@@ -71,7 +71,7 @@
     zh: {
       'nav-guide':'场景指南','nav-gallery':'验证作品集','nav-start':'快速上手','nav-community':'社区包','nav-install':'安装技能',
       'hero-badge':'稳定版 Agent 技能 · 查看更新','hero-works':'支持',
-      'hero-h1':'把系统讲清楚，<br>得到<em>可信的架构图。</em>',
+      'hero-h1':'<span class="l">把系统讲清楚，</span><span class="l">得到<em>可信的架构图。</em></span>',
       'hero-sub':'在对话里描述系统，或让 Agent 直接读代码仓库。Archify 交付一个独立、可探索的 HTML 技术图——交付前已自动校验。',
       'hero-cta':'开始使用','hero-stars':'GitHub Star','copy':'复制','copied':'已复制',
       'demo-watch':'观看 35 秒演示','demo-title':'Archify 35 秒演示','demo-close':'关闭演示',
@@ -135,6 +135,11 @@
     }
   };
 
+  /* The MAP beat clears focus/lens with a fragment that names no element: an
+     empty '#' would make the browser scroll the indicated "top of document"
+     into view, which in a same-origin frame also scrolls this page. */
+  const MAP = '#overview';
+
   /* Each proof carries four camera beats (focus → upstream → lens → map) that
      the pinned stage applies by replacing the artifact's hash; the viewer
      animates its own camera on hashchange. */
@@ -142,7 +147,7 @@
     signal: {
       artifact: 'gallery/artifacts/agent-tool-call.workflow.html',
       hash: '#focus=planner&reach=downstream',
-      beats: ['#', '#focus=planner&reach=downstream', '#focus=approval&reach=upstream', '#lens=security~database'],
+      beats: [MAP, '#focus=planner&reach=downstream', '#focus=approval&reach=upstream', '#lens=security~database'],
       iframeTitle: { en: 'Agent Tool Call live Archify proof', zh: '智能体工具调用 Archify 实时成品' },
       name: { en: 'Agent Tool Call', zh: '智能体工具调用' },
       meta: { en: 'Workflow · Signal Flow · 12 nodes · 11 edges', zh: '工作流 · Signal Flow · 12 节点 · 11 条关系' },
@@ -151,7 +156,7 @@
     blueprint: {
       artifact: 'gallery/artifacts/production-deployment.architecture.html',
       hash: '#lens=backend~database',
-      beats: ['#', '#focus=gateway&reach=downstream', '#focus=postgres&reach=upstream', '#lens=backend~database'],
+      beats: [MAP, '#focus=gateway&reach=downstream', '#focus=postgres&reach=upstream', '#lens=backend~database'],
       iframeTitle: { en: 'Production Deployment live Archify proof', zh: '生产部署架构 Archify 实时成品' },
       name: { en: 'Production Deployment', zh: '生产部署' },
       meta: { en: 'Architecture · Blueprint · 12 nodes · 12 edges', zh: '架构图 · Blueprint · 12 节点 · 12 条关系' },
@@ -161,7 +166,7 @@
       artifact: 'gallery/artifacts/cache-miss.sequence.html',
       hash: '#route=web~db',
       embedHash: '#focus=web&reach=downstream',
-      beats: ['#', '#focus=web&reach=downstream', '#focus=db&reach=upstream', '#lens=database~security'],
+      beats: [MAP, '#focus=web&reach=downstream', '#focus=db&reach=upstream', '#lens=database~security'],
       iframeTitle: { en: 'Cache Miss Request live Archify proof', zh: '缓存未命中请求 Archify 实时成品' },
       name: { en: 'Cache Miss', zh: '缓存未命中' },
       meta: { en: 'Sequence · Classic · 7 participants · 12 messages', zh: '时序图 · Classic · 7 个参与者 · 12 条消息' },
@@ -205,7 +210,7 @@
     beatTicks.forEach((tick, i) => tick.setAttribute('aria-pressed', String(i === next)));
     $('beat-title').textContent = LANGS[lang][`beat-${next}-t`];
     $('beat-body').textContent = LANGS[lang][`beat-${next}-b`];
-    addressHash.textContent = hash === '#' ? '' : hash;
+    addressHash.textContent = hash === MAP ? '' : hash;
     if (changed) {
       beatCard.classList.remove('is-swapping'); void beatCard.offsetWidth; beatCard.classList.add('is-swapping');
       addressHash.classList.remove('is-flash'); void addressHash.offsetWidth; addressHash.classList.add('is-flash');
@@ -323,6 +328,25 @@
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
   applyScroll();
+
+  /* ══ Hero pointer spotlight — fine pointers only, never under reduced motion ══ */
+  const hero = document.querySelector('.hero');
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches && !reducedMotion.matches) {
+    let spotTick = false, spotX = 0, spotY = 0;
+    hero.addEventListener('pointermove', event => {
+      spotX = event.clientX; spotY = event.clientY;
+      if (spotTick) return;
+      spotTick = true;
+      requestAnimationFrame(() => {
+        spotTick = false;
+        const rect = hero.getBoundingClientRect();
+        hero.style.setProperty('--mx', `${spotX - rect.left}px`);
+        hero.style.setProperty('--my', `${spotY - rect.top}px`);
+        hero.classList.add('is-pointing');
+      });
+    });
+    hero.addEventListener('pointerleave', () => hero.classList.remove('is-pointing'));
+  }
 
   /* ══ Diagram types — index list drives the preview plate ══ */
   const typeItems = [...document.querySelectorAll('.type-item')];
