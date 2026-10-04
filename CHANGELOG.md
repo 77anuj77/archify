@@ -4,6 +4,9 @@ All notable changes are documented here. Format loosely follows [Keep a Changelo
 
 ## [Unreleased]
 
+### Changed
+- **Everyday subjects in the Skill trigger.** The Skill description now also covers everyday plans and processes with steps, parts, relationships, or states (leave or travel plans, application and approval processes, back-and-forth exchanges, where money or documents go, where an application stands) and states that numeric charts and dashboards are out of scope. The Type router names an everyday use per mode, and authoring points to everyday icons and legend labels while asking for missing personal facts instead of inventing them. Renderers, schemas, and validation are unchanged.
+
 ## [3.0.1] — 2026-09-28
 
 ### Changed
