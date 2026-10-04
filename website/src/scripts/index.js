@@ -190,8 +190,15 @@
   const beatCard = document.querySelector('.beat-card');
   const beatTicks = [...document.querySelectorAll('.beat-tick')];
 
+  const siteTheme = () => document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  /* the artifact is same-origin, so its own theme attribute follows the site */
+  function syncFrameTheme() {
+    try { proofFrame.contentDocument.documentElement.setAttribute('data-theme', siteTheme()); } catch (_) {}
+  }
+  window.addEventListener('archify:themechange', syncFrameTheme);
+
   function proofEmbedUrl(proof) {
-    return `${proof.artifact}?embed=1&theme=dark${proof.embedHash || proof.hash}`;
+    return `${proof.artifact}?embed=1&theme=${siteTheme()}${proof.embedHash || proof.hash}`;
   }
 
   function replaceFrameHash(hash) {
@@ -245,6 +252,7 @@
 
   proofFrame.addEventListener('load', () => {
     proofStage.classList.remove('is-loading');
+    syncFrameTheme();
     replaceFrameHash(PROOFS[activeProof].beats[beat]);
   });
   document.querySelectorAll('.spec-card').forEach(tab => {

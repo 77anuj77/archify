@@ -8,6 +8,7 @@ const { head, css } = Astro.props;
 <html lang="en">
 <head>
   <Fragment set:html={head} />
+  <script is:inline>(function () { var t = 'light'; try { t = localStorage.getItem('archify-site-theme') || 'light'; } catch (_) {} document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light'); })();</script>
   <style is:inline set:html={siteCss + css}></style>
 </head>
 <body><slot /></body>
