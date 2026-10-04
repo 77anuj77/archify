@@ -120,3 +120,28 @@
       html { scroll-behavior:auto; }
       .lead, .type-shell, .workbench { animation:none; }
     }
+
+    /* ══ Start polish — a guided workbench ══ */
+    .type-shell { padding:1.5rem 1.75rem 1.75rem; border-radius:20px; background:linear-gradient(180deg,rgba(238,241,243,.035),rgba(238,241,243,.01)); }
+    .input-path { min-height:84px; padding:1rem 1.15rem; border-radius:14px; background:rgba(238,241,243,.02); }
+    .input-path strong { font-size:.9375rem; }
+    .input-path span { font-size:.8125rem; }
+    .input-path[aria-selected="true"] { border-color:rgba(255,106,43,.6); background:radial-gradient(ellipse 80% 120% at 0% 50%, rgba(255,106,43,.16), transparent 70%), rgba(238,241,243,.02); box-shadow:0 0 0 1px rgba(255,106,43,.25), 0 20px 50px -25px rgba(255,106,43,.6); }
+    .type-tabs { padding:4px; gap:4px; border-radius:14px; background:rgba(0,0,0,.3); border-color:var(--line-hi); }
+    .type-tab { border-radius:10px; background:transparent; }
+    .type-tab:hover { background:rgba(238,241,243,.05); }
+    .type-tab[aria-selected="true"] { color:#0a0b0d; box-shadow:0 8px 24px -10px rgba(255,255,255,.4); }
+    .workbench { gap:18px; }
+    .panel { border-radius:22px; background:linear-gradient(180deg,#0e1216,#0b0e12); box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+    .panel-kicker b { font-family:var(--font-mono); font-style:normal; font-size:.75rem; font-weight:600; padding:.25rem .5rem; border-radius:999px; background:var(--accent-soft); }
+    .panel h2 { font-size:1.875rem; letter-spacing:-.03em; }
+    .agent-tab { border-radius:10px; }
+    .agent-tab[aria-selected="true"] { color:#0a0b0d; }
+    .command-block { border-radius:14px; background:#08090c; }
+    .copy-button { font-size:.625rem; }
+    pre { font-size:.75rem; }
+    .prompt-box { position:relative; padding:1.25rem 1.4rem 1.25rem 1.6rem; border-radius:14px; border-color:rgba(255,106,43,.35); background:linear-gradient(90deg, rgba(255,106,43,.1), rgba(0,0,0,.25) 30%); color:var(--text); font-size:.8125rem; box-shadow:inset 3px 0 0 var(--accent); }
+    .action { border-radius:12px; }
+    .action-primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:600; box-shadow:0 10px 30px -10px rgba(255,106,43,.7); }
+    .action-primary:hover { background:#ff7d45; border-color:#ff7d45; color:#fff; }
+    .include-list li { background:rgba(238,241,243,.03); font-size:.625rem; }
