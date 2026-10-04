@@ -23,8 +23,8 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
         <span data-i18n="hero-badge">Stable Agent Skill · see what's new</span>
         <span class="eyebrow-arrow" aria-hidden="true">→</span>
       </a>
-      <h1 data-i18n="hero-h1"><span class="l">Talk through your system.</span><span class="l">Get a map <em>you can trust.</em></span></h1>
-      <p class="hero-sub fade-up d2" data-i18n="hero-sub">Describe a system in chat, or point your agent at a repo. Archify returns one self-contained, explorable HTML diagram — validated before it ships.</p>
+      <h1 data-i18n="hero-h1"><span class="l">Describe it in plain words.</span><span class="l">Get a map <em>you can trust.</em></span></h1>
+      <p class="hero-sub fade-up d2" data-i18n="hero-sub">A leave plan, a job hunt, a monthly budget, or a software system — if it has steps, parts, relationships, or states, your AI agent turns it into one explorable HTML map, validated before it ships.</p>
       <div class="hero-actions fade-up d3">
         <div class="cmd-chip">
           <span class="cmd-prompt" aria-hidden="true">$</span>
@@ -71,6 +71,9 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
             <button class="spec-card" id="proof-tab-classic" type="button" role="tab" aria-controls="hero-proof-panel" aria-selected="false" tabindex="-1" data-proof="classic">
               <span class="spec-idx">03</span><span class="spec-name">Cache Miss</span>
             </button>
+            <button class="spec-card" id="proof-tab-leave" type="button" role="tab" aria-controls="hero-proof-panel" aria-selected="false" tabindex="-1" data-proof="leave">
+              <span class="spec-idx">04</span><span class="spec-name">Annual Leave</span>
+            </button>
           </div>
           <div class="window-address" aria-hidden="true">
             <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" stroke="currentColor" stroke-width="1.2"/><path d="M4 5.5V4a2 2 0 1 1 4 0v1.5" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -110,49 +113,87 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
     </div>
   </section>
 
+  <!-- EVERYDAY — the same validated artifacts, for life outside the codebase -->
+  <section id="everyday">
+    <div class="container">
+      <header class="section-head fade-up">
+        <p class="section-label"><span>01</span><span data-i18n="label-life">Beyond code</span></p>
+        <h2 class="section-heading" data-i18n="life-h2">Not just for code. <em>For anything with steps.</em></h2>
+        <p class="section-body" data-i18n="life-body">Leave plans, job hunts, renting, a monthly budget — each one below is a real Archify artifact, generated and validated exactly like a system diagram. Open one and click around.</p>
+      </header>
+      <div class="life-grid">
+        <a class="life-card fade-up" href="cases/life/leave-plan.workflow.html?present=1" target="_blank" rel="noopener">
+          <span class="life-plate"><img src="assets/life/leave-plan.workflow.webp" alt="一年的年假怎么排" loading="lazy" decoding="async" width="2160" height="1350"></span>
+          <span class="life-meta"><span class="life-lang">中文</span><span class="life-kind" data-i18n="life-leave-k">Workflow</span><span class="life-open" aria-hidden="true">↗</span></span>
+          <span class="life-q" data-i18n="life-leave-q">How should I spread my leave across the year?</span>
+          <span class="life-title">一年的年假怎么排</span>
+        </a>
+        <a class="life-card fade-up" href="cases/life/job-search.lifecycle.html?present=1" target="_blank" rel="noopener">
+          <span class="life-plate"><img src="assets/life/job-search.lifecycle.webp" alt="Where Each Job Application Stands" loading="lazy" decoding="async" width="2160" height="1350"></span>
+          <span class="life-meta"><span class="life-lang">EN</span><span class="life-kind" data-i18n="life-job-k">Lifecycle</span><span class="life-open" aria-hidden="true">↗</span></span>
+          <span class="life-q" data-i18n="life-job-q">Where does each job application stand?</span>
+          <span class="life-title">Where Each Job Application Stands</span>
+        </a>
+        <a class="life-card fade-up" href="cases/life/monthly-money.dataflow.html?present=1" target="_blank" rel="noopener">
+          <span class="life-plate"><img src="assets/life/monthly-money.dataflow.webp" alt="Where a Paycheck Goes Each Month" loading="lazy" decoding="async" width="2160" height="1350"></span>
+          <span class="life-meta"><span class="life-lang">EN</span><span class="life-kind" data-i18n="life-money-k">Data flow</span><span class="life-open" aria-hidden="true">↗</span></span>
+          <span class="life-q" data-i18n="life-money-q">Where does my paycheck go each month?</span>
+          <span class="life-title">Where a Paycheck Goes Each Month</span>
+        </a>
+        <a class="life-card fade-up" href="cases/life/renting.sequence.html?present=1" target="_blank" rel="noopener">
+          <span class="life-plate"><img src="assets/life/renting.sequence.webp" alt="租一套房，一来一回" loading="lazy" decoding="async" width="2160" height="1350"></span>
+          <span class="life-meta"><span class="life-lang">中文</span><span class="life-kind" data-i18n="life-rent-k">Sequence</span><span class="life-open" aria-hidden="true">↗</span></span>
+          <span class="life-q" data-i18n="life-rent-q">Who says what when I rent a flat?</span>
+          <span class="life-title">租一套房，一来一回</span>
+        </a>
+      </div>
+      <p class="life-note fade-up" data-i18n="life-note">Numbers in these examples are illustrative. Describe your own situation and your agent draws yours.</p>
+    </div>
+  </section>
+
   <!-- DIAGRAM TYPES — index list + lightbox preview -->
   <section id="types">
     <div class="container">
       <header class="section-head fade-up">
-        <p class="section-label"><span>01</span><span data-i18n="label-types">Diagram types</span></p>
-        <h2 class="section-heading" data-i18n="types-h2">Five languages for <em>one system.</em></h2>
-        <p class="section-body" data-i18n="types-body">Architecture, workflows, sequences, data flows, or state machines — describe what you need and Archify picks the visual language that fits the question.</p>
+        <p class="section-label"><span>02</span><span data-i18n="label-types">Diagram types</span></p>
+        <h2 class="section-heading" data-i18n="types-h2">Five questions. <em>Five kinds of map.</em></h2>
+        <p class="section-body" data-i18n="types-body">Ask the question you actually have. Archify picks the picture that answers it — for a software system, a plan, or something in your own life.</p>
       </header>
 
       <div class="types-index">
         <ol class="types-list" id="types-list">
           <li class="type-item is-active" data-type="arch">
             <button type="button" aria-controls="type-preview" aria-pressed="true">
-              <span class="type-no">01</span><span class="type-name" data-i18n="arch-h">Architecture</span>
+              <span class="type-no">01</span><span class="type-name"><small class="type-kind" data-i18n="arch-k">Architecture</small><span data-i18n="arch-h">What is it made of?</span></span>
             </button>
             <div class="type-detail"><div>
-              <p data-i18n="arch-p">System components, cloud resources, databases, caches, services, security groups, and the connections between them.</p>
-              <ul class="type-uses"><li data-i18n="arch-li1">AWS / GCP / Azure infra</li><li data-i18n="arch-li2">Microservices topology</li><li data-i18n="arch-li3">Security boundaries</li><li data-i18n="arch-li4">Network layout</li></ul>
+              <p data-i18n="arch-p">The parts of something and how they connect — a household's accounts and cards, a team's roles, or a cloud system's services, databases, and security boundaries.</p>
+              <ul class="type-uses"><li data-i18n="arch-li1">Household accounts</li><li data-i18n="arch-li2">Team roles</li><li data-i18n="arch-li3">Microservices topology</li><li data-i18n="arch-li4">Cloud + security boundaries</li></ul>
             </div></div>
           </li>
           <li class="type-item" data-type="wf">
             <button type="button" aria-controls="type-preview" aria-pressed="false">
-              <span class="type-no">02</span><span class="type-name" data-i18n="wf-h">Workflow</span>
+              <span class="type-no">02</span><span class="type-name"><small class="type-kind" data-i18n="wf-k">Workflow</small><span data-i18n="wf-h">What happens next?</span></span>
             </button>
-            <div class="type-detail"><div><p data-i18n="wf-p">Swim-lane processes with semantic nodes and anchored edges — approval gates, async branches, and observability paths, lane by lane.</p></div></div>
+            <div class="type-detail"><div><p data-i18n="wf-p">Steps across people or stages — a visa application, a leave plan, onboarding, an approval chain, or a CI/CD pipeline, lane by lane.</p></div></div>
           </li>
           <li class="type-item" data-type="seq">
             <button type="button" aria-controls="type-preview" aria-pressed="false">
-              <span class="type-no">03</span><span class="type-name" data-i18n="seq-h">Sequence</span>
+              <span class="type-no">03</span><span class="type-name"><small class="type-kind" data-i18n="seq-k">Sequence</small><span data-i18n="seq-h">Who says what, in what order?</span></span>
             </button>
-            <div class="type-detail"><div><p data-i18n="seq-p">API call chains, request lifecycles, cache fallback paths, auth checks, async traces — who calls whom, in what order, and what returns.</p></div></div>
+            <div class="type-detail"><div><p data-i18n="seq-p">Back-and-forth in order — renting a flat through an agent, an expense claim, or an API call chain with its returns.</p></div></div>
           </li>
           <li class="type-item" data-type="flow">
             <button type="button" aria-controls="type-preview" aria-pressed="false">
-              <span class="type-no">04</span><span class="type-name" data-i18n="flow-h">Data Flow</span>
+              <span class="type-no">04</span><span class="type-name"><small class="type-kind" data-i18n="flow-k">Data Flow</small><span data-i18n="flow-h">Where does it all go?</span></span>
             </button>
-            <div class="type-detail"><div><p data-i18n="flow-p">Data pipelines, ETL/ELT, analytics events, PII isolation, warehouse sync, lineage, and downstream consumers — with governance boundaries.</p></div></div>
+            <div class="type-detail"><div><p data-i18n="flow-p">Where something moves and where it lands — a paycheck into bills and savings, documents through review, or data through a pipeline.</p></div></div>
           </li>
           <li class="type-item" data-type="life">
             <button type="button" aria-controls="type-preview" aria-pressed="false">
-              <span class="type-no">05</span><span class="type-name" data-i18n="life-h">Lifecycle</span>
+              <span class="type-no">05</span><span class="type-name"><small class="type-kind" data-i18n="life-k">Lifecycle</small><span data-i18n="life-h">Where does it stand now?</span></span>
             </button>
-            <div class="type-detail"><div><p data-i18n="life-p">State machines, object lifecycles, run/order/deployment status transitions — with wait states, retries, cancellation, and terminal outcomes.</p></div></div>
+            <div class="type-detail"><div><p data-i18n="life-p">States and what moves between them — job applications, an order, a passport renewal, or a deployment — with waits, retries, and endings.</p></div></div>
           </li>
         </ol>
 
@@ -178,7 +219,7 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
   <section id="features">
     <div class="container">
       <header class="section-head fade-up">
-        <p class="section-label"><span>02</span><span data-i18n="label-features">Output</span></p>
+        <p class="section-label"><span>03</span><span data-i18n="label-features">Output</span></p>
         <h2 class="section-heading" data-i18n="features-h2">One file. <em>Everything inside.</em></h2>
       </header>
 
@@ -221,7 +262,7 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
         <div class="feature cell fade-up d2">
           <span class="cell-glyph" aria-hidden="true">“ ”</span>
           <h3 data-i18n="f6-h">Iterate by chat</h3>
-          <p data-i18n="f6-p">"Add Redis", "move auth to the left", "use emerald for the API" — refine in natural language. No diagram editor to learn.</p>
+          <p data-i18n="f6-p">"Move the summer trip to August", "add Redis", "make the deadline red" — refine in plain words. No diagram editor to learn.</p>
         </div>
         <div class="feature cell fade-up d3">
           <span class="cell-glyph" aria-hidden="true">→</span>
@@ -238,10 +279,10 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
     <div class="container">
       <header class="section-head section-head-row fade-up">
         <div>
-          <p class="section-label"><span>03</span><span data-i18n="label-palette">Design system</span></p>
+          <p class="section-label"><span>04</span><span data-i18n="label-palette">Design system</span></p>
           <h2 class="section-heading" data-i18n="palette-h2">Color that <em>means something.</em></h2>
         </div>
-        <p class="section-body" data-i18n="palette-body">Seven component types. Each with coordinated dark and light variants that switch together via the theme toggle.</p>
+        <p class="section-body" data-i18n="palette-body">Seven node colours, consistent in both themes. The legend renames them for your story — Backend can read as Vacation, Security as Rule.</p>
       </header>
       <div class="legend fade-up d1">
         <div class="legend-chip" style="--node:var(--hue-cyan)"><span class="legend-node"><b>Web App</b><i>React SPA</i></span><span class="legend-label" data-i18n="chip-frontend">Frontend</span><span class="legend-use" data-i18n="chip-frontend-use">Client apps, browsers, mobile, UI</span></div>
@@ -259,7 +300,7 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
   <section id="quickstart">
     <div class="container">
       <header class="section-head fade-up">
-        <p class="section-label"><span>04</span><span data-i18n="label-qs">Quick start</span></p>
+        <p class="section-label"><span>05</span><span data-i18n="label-qs">Quick start</span></p>
         <h2 class="section-heading" data-i18n="qs-h2">Three steps. <em>One command.</em></h2>
         <p class="section-body" data-i18n="qs-body">One checked Skill for Claude Code, Codex, Cursor, OpenCode, and GitHub Copilot. Pick your agent for the exact command.</p>
       </header>
@@ -287,7 +328,7 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
             <p class="install-cmt" data-i18n="term-c2"># Or try it once with Codex, no permanent install</p>
             <p class="install-cmd"><span aria-hidden="true">$ </span><code>npx skills use tt-a1i/archify@archify --agent codex</code></p>
             <p class="install-cmt" data-i18n="term-c3"># Then just ask</p>
-            <p class="install-ask" data-i18n="term-ask">› Use Archify to draw our checkout service: web, API, Redis cache, Postgres, Stripe webhook.</p>
+            <p class="install-ask" data-i18n="term-ask">› Use Archify to plan my annual leave: 10 days, plus 2 comp days that expire at the end of June.</p>
           </div>
         </div>
 
@@ -300,7 +341,7 @@ const installCommand = 'npx -y skills add tt-a1i/archify --skill archify --agent
           <li class="step">
             <span class="step-num">2</span>
             <div><h4 data-i18n="step2-h">Describe your system</h4>
-            <p data-i18n="step2-p">Describe components, connections, and cloud services — or ask your agent to analyze the repository first.</p></div>
+            <p data-i18n="step2-p">Describe the steps, people, parts, or states — or ask your agent to read a repository first.</p></div>
           </li>
           <li class="step">
             <span class="step-num">3</span>

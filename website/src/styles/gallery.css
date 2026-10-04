@@ -224,3 +224,19 @@
     .method-code .accent { color:var(--accent); }
     @media (max-width:960px) { .method { padding:5rem 0; } .method-grid { grid-template-columns:1fr; gap:2.75rem; } }
     @media (max-width:640px) { .method-code pre { padding:1.25rem; font-size:.75rem; } }
+
+    /* ══ Beyond code — everyday proofs ══ */
+    .life-section { margin-top:5rem; }
+    .life-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; }
+    .life-card { min-width:0; display:flex; flex-direction:column; gap:.7rem; }
+    .life-plate { display:block; aspect-ratio:16 / 11; border-radius:16px; overflow:hidden; background:#f4f6f5; border:1px solid var(--line-hi); transition:transform .5s var(--ease-out),border-color .3s var(--ease-out),box-shadow .5s var(--ease-out); }
+    .life-plate img { width:100%; height:100%; display:block; padding:.85rem; object-fit:contain; object-position:center; background:#fff; }
+    .life-plate:hover { transform:translateY(-4px); border-color:rgba(var(--accent-rgb),.5); box-shadow:0 36px 80px -40px rgba(var(--accent-rgb),.45); }
+    .life-meta { display:flex; align-items:center; gap:.5rem; font-family:var(--font-mono); font-size:.6875rem; letter-spacing:.06em; color:var(--text-3); }
+    .life-lang { padding:.15rem .45rem; border-radius:999px; border:1px solid var(--line-hi); color:var(--text-2); }
+    .life-kind { color:var(--accent); }
+    .life-q { font-family:var(--font-title); font-size:1.125rem; font-weight:500; letter-spacing:-.02em; line-height:1.3; color:var(--text); text-wrap:balance; }
+    .life-links { display:flex; gap:.5rem; margin-top:auto; }
+    @media (max-width:1100px) { .life-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    @media (max-width:560px) { .life-grid { grid-template-columns:1fr; } }
+    @media (prefers-reduced-motion:reduce) { .life-plate:hover { transform:none; } }
