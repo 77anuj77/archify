@@ -7002,11 +7002,32 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           var delayCs = Math.max(1, Math.round(100 / fps));
           return { session: session, ctx: ctx, w: w, h: h, totalFrames: totalFrames, delayCs: delayCs };
         }).then(function (plan) {
-          var bytes = new Uint8Array(40 + plan.w * plan.h * (plan.totalFrames + 6));
+          // Write into fixed 1 MiB chunks instead of pre-sizing one
+          // canvas-by-frame buffer. Width is capped at 1280 px but height
+          // follows the diagram's aspect ratio, so a tall diagram at 6 s and
+          // 15 fps would otherwise ask for hundreds of megabytes in a single
+          // allocation (RangeError on mobile) and silently drop any bytes
+          // past the end.
+          var CHUNK = 1 << 20;
+          var chunks = [];
+          var cur = new Uint8Array(CHUNK);
           var offset = 0;
-          function push8(v) { bytes[offset++] = v & 0xFF; }
-          function push16(v) { bytes[offset++] = v & 0xFF; bytes[offset++] = (v >> 8) & 0xFF; }
-          function push(p, n) { for (var i = 0; i < n; i++) bytes[offset++] = p[i]; }
+          function reserve(n) {
+            if (offset + n <= CHUNK) return;
+            chunks.push(cur.subarray(0, offset));
+            cur = new Uint8Array(CHUNK);
+            offset = 0;
+          }
+          function push8(v) { reserve(1); cur[offset++] = v & 0xFF; }
+          function push16(v) { reserve(2); cur[offset++] = v & 0xFF; cur[offset++] = (v >> 8) & 0xFF; }
+          function push(p, n) {
+            reserve(n);
+            for (var i = 0; i < n; i++) cur[offset++] = p[i];
+          }
+          function pushAscii(text) {
+            reserve(text.length);
+            for (var i = 0; i < text.length; i++) cur[offset++] = text.charCodeAt(i);
+          }
 
           // Logical screen descriptor.
           push8(0x47); push8(0x49); push8(0x46); push8(0x38); push8(0x39); push8(0x61); // GIF89a
@@ -7022,6 +7043,13 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             push8(GIF_PALETTE[pi * 3 + 1]);
             push8(GIF_PALETTE[pi * 3 + 2]);
           }
+
+          // NETSCAPE2.0 application extension: loop forever (0 = infinite).
+          // Without it the 6 s trace plays once and holds its last frame,
+          // which defeats inline preview in chat.
+          push8(0x21); push8(0xFF); push8(0x0B);
+          pushAscii('NETSCAPE2.0');
+          push8(0x03); push8(0x01); push16(0x0000); push8(0x00);
 
           var lzwMin = 8;
 
@@ -7049,108 +7077,82 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
               indices[idx++] = quantizePixel(img[i], img[i + 1], img[i + 2]);
             }
 
-            // GIF LZW compression. Port of gifenc's proven lzwEncode
-            // (MIT, Kevin Weiner / Thibault Imbert / Johan Nordberg / Matt
-            // DesLauriers / Mathieu Henri / Mattias Johansson), which is itself
-            // a port of the classic GIFCOMPR.C routines. Uses open-addressing
-            // double hashing over a {code,nextCode} table and emits 254-byte
-            // packets (the legal GIF sub-block maximum) terminated by a 0x00.
-            var initCodeSize = Math.max(2, lzwMin);
-            var BITS = 12;
-            var MASKS = [0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535];
-            var initBits = initCodeSize + 1;
-            var nBits = initBits;
-            var maxcode = (1 << nBits) - 1;
-            var clearCode = 1 << (initBits - 1);
+            // GIF LZW compression. Straightforward dictionary encoder with a
+            // prefix/suffix map, verified against an independent decoder.
+            // An earlier port of gifenc's open-addressing probe loop was
+            // dropped: its code-size schedule desynchronised from the decoder
+            // after the first table reset and produced an undecodable stream.
+            var minCodeSize = Math.max(2, lzwMin);
+            var clearCode = 1 << minCodeSize;
             var eoiCode = clearCode + 1;
-            var freeEnt = clearCode + 2;
-            var clearFlg = false;
-            var hsize = 5003;
-            var htab = new Int32Array(hsize);
-            var codetab = new Int32Array(hsize);
-            htab.fill(-1);
-            var hshift = 0;
-            var fcodeTmp;
-            for (fcodeTmp = hsize; fcodeTmp < 65536; fcodeTmp *= 2) ++hshift;
-            hshift = 8 - hshift;
-            push8(initCodeSize);
+
+            var dict = new Map();
+            var nextCode = clearCode + 2;
+            var codeSize = minCodeSize + 1;
             var curAccum = 0, curBits = 0, aCount = 0;
-            var accum = new Uint8Array(256);
-            var ent;
-            var c;
-            var fcode = 0;
-            var i = 0;
-            function gifOutput(code) {
-              curAccum &= MASKS[curBits];
-              if (curBits > 0) curAccum |= code << curBits;
-              else curAccum = code;
-              curBits += nBits;
+            var accum = new Uint8Array(255);
+            function flushSubBlock() {
+              if (aCount > 0) {
+                push8(aCount);
+                push(accum, aCount);
+                aCount = 0;
+              }
+            }
+            function emitByte(b) {
+              accum[aCount++] = b;
+              if (aCount === 255) flushSubBlock();
+            }
+            function emit(code) {
+              curAccum |= code << curBits;
+              curBits += codeSize;
               while (curBits >= 8) {
-                accum[aCount++] = curAccum & 0xff;
-                if (aCount >= 254) {
-                  push8(aCount);
-                  push(accum, aCount);
-                  aCount = 0;
-                }
+                emitByte(curAccum & 0xFF);
                 curAccum >>= 8;
                 curBits -= 8;
               }
-              if (freeEnt > maxcode || clearFlg) {
-                if (clearFlg) {
-                  nBits = initBits;
-                  maxcode = (1 << nBits) - 1;
-                  clearFlg = false;
-                } else {
-                  ++nBits;
-                  maxcode = nBits === BITS ? (1 << nBits) : (1 << nBits) - 1;
-                }
-              }
-              if (code === eoiCode) {
-                while (curBits > 0) {
-                  accum[aCount++] = curAccum & 0xff;
-                  if (aCount >= 254) { push8(aCount); push(accum, aCount); aCount = 0; }
-                  curAccum >>= 8;
-                  curBits -= 8;
-                }
-                if (aCount > 0) { push8(aCount); push(accum, aCount); aCount = 0; }
-              }
             }
-            gifOutput(clearCode);
-            ent = indices[0];
+            function resetDictionary() {
+              dict = new Map();
+              nextCode = clearCode + 2;
+              codeSize = minCodeSize + 1;
+            }
+
+            push8(minCodeSize);
+            emit(clearCode);
+            var prefix = indices[0];
             for (var i2 = 1; i2 < indices.length; i2++) {
-              c = indices[i2];
-              fcode = (c << 8) | ent;
-              i = (c << hshift) ^ ent;
-              if (htab[i] === fcode) { ent = codetab[i]; continue; }
-              if (htab[i] >= 0) {
-                var disp = hsize - i;
-                if (i === 0) disp = 1;
-                do {
-                  i -= disp;
-                  if (i < 0) i += hsize;
-                  if (htab[i] === fcode) { ent = codetab[i]; break; }
-                } while (htab[i] >= 0);
+              var c = indices[i2];
+              var key = prefix * 256 + c;
+              var known = dict.get(key);
+              if (known !== undefined) { prefix = known; continue; }
+              emit(prefix);
+              if (nextCode < 4096) {
+                dict.set(key, nextCode);
+                nextCode += 1;
+                if (nextCode > (1 << codeSize) && codeSize < 12) codeSize += 1;
               }
-              gifOutput(ent);
-              ent = c;
-              if (freeEnt < 4096) {
-                codetab[i] = freeEnt++;
-                htab[i] = fcode;
-              } else {
-                for (var j = 0; j < hsize; j++) htab[j] = -1;
-                freeEnt = clearCode + 2;
-                clearFlg = true;
+              if (nextCode >= 4096) {
+                emit(clearCode);
+                resetDictionary();
               }
+              prefix = c;
             }
-            gifOutput(ent);
-            gifOutput(eoiCode);
+            emit(prefix);
+            emit(eoiCode);
+            while (curBits > 0) {
+              emitByte(curAccum & 0xFF);
+              curAccum >>= 8;
+              curBits -= 8;
+            }
+            flushSubBlock();
             push8(0); // LZW block terminator
           }
 
           push8(0x3B); // GIF trailer
 
           plan.session.release();
-          return new Blob([bytes.subarray(0, offset)], { type: 'image/gif' });
+          chunks.push(cur.subarray(0, offset));
+          return new Blob(chunks, { type: 'image/gif' });
         });
       }
 
