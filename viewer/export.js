@@ -775,12 +775,16 @@
         return '';
       }
 
-      function canRecordMotion() {
+      function motionTraceAvailable() {
         var svg = document.querySelector('.diagram-container svg');
-        return !!(svg && svg.getAttribute('data-animation') === 'trace' &&
+        return !!(svg && svg.getAttribute('data-animation') === 'trace');
+      }
+
+      function canRecordMotion() {
+        return motionTraceAvailable() &&
           typeof MediaRecorder !== 'undefined' && motionMimeType() &&
           typeof HTMLCanvasElement !== 'undefined' &&
-          typeof HTMLCanvasElement.prototype.captureStream === 'function');
+          typeof HTMLCanvasElement.prototype.captureStream === 'function';
       }
 
       // Record the live CSS animation without Puppeteer, ffmpeg, or a network
@@ -789,13 +793,14 @@
       // advance its CSS animation. Keep one crisp static SVG background, then
       // render an explicit time-varying signal scene over the real authored
       // relationship geometry on every captured canvas frame.
-      function recordWebm(options) {
+      //
+      // prepareMotionSession() sets up that shared static background plus the
+      // authored edge/node signal scene once, and returns a draw(elapsed)
+      // callback so both the MediaRecorder (WebM) and GIF exporters sample the
+      // exact same per-frame scene.
+      function prepareMotionSession(options) {
         options = options || {};
-        if (!canRecordMotion()) {
-          return Promise.reject(exportError('viewer.export.error.webmRequirements'));
-        }
         var duration = Math.max(250, Number(options.duration) || MOTION_DURATION);
-        var fps = Math.max(1, Number(options.fps) || MOTION_FPS);
         var svg = document.querySelector('.diagram-container svg');
         var vb = svg.viewBox.baseVal;
         var scale = Math.min(1, 1280 / vb.width);
@@ -958,31 +963,68 @@
             canvas.width = Math.max(2, Math.round(data.width / 2) * 2);
             canvas.height = Math.max(2, Math.round(data.height / 2) * 2);
             var ctx = canvas.getContext('2d');
-            var stream = canvas.captureStream(fps);
-            var mime = motionMimeType();
-            var recorder;
-            try {
-              recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6000000 });
-            } catch (err) {
+            if (!ctx) {
               URL.revokeObjectURL(sourceUrl);
-              stream.getTracks().forEach(function (track) { track.stop(); });
-              reject(err);
+              reject(exportError('viewer.export.error.contextUnavailable'));
               return;
             }
-            var chunks = [];
-            var raf = 0;
-            var stopped = false;
-            var startedAt = performance.now();
-            function cleanup() {
-              if (stopped) return;
-              stopped = true;
-              cancelAnimationFrame(raf);
-              URL.revokeObjectURL(sourceUrl);
-              stream.getTracks().forEach(function (track) { track.stop(); });
+            function draw(elapsed) {
+              drawMotionFrame(ctx, backgroundImage, motionScene, elapsed);
             }
+            function release() {
+              URL.revokeObjectURL(sourceUrl);
+            }
+            drawMotionFrame(ctx, backgroundImage, motionScene, 0);
+            resolve({
+              canvas: canvas,
+              ctx: ctx,
+              duration: duration,
+              motionScene: motionScene,
+              draw: draw,
+              release: release
+            });
+          };
+          backgroundImage.onerror = function () {
+            URL.revokeObjectURL(sourceUrl);
+            reject(exportError('viewer.export.error.webmBackground'));
+          };
+          backgroundImage.src = sourceUrl;
+        });
+      }
+
+      function recordWebm(options) {
+        options = options || {};
+        if (!canRecordMotion()) {
+          return Promise.reject(exportError('viewer.export.error.webmRequirements'));
+        }
+        var fps = Math.max(1, Number(options.fps) || MOTION_FPS);
+        return prepareMotionSession(options).then(function (session) {
+          var ctx = session.ctx;
+          var stream = ctx.canvas.captureStream(fps);
+          var mime = motionMimeType();
+          var recorder;
+          try {
+            recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 6000000 });
+          } catch (err) {
+            session.release();
+            stream.getTracks().forEach(function (track) { track.stop(); });
+            return Promise.reject(err);
+          }
+          var chunks = [];
+          var raf = 0;
+          var stopped = false;
+          var startedAt = performance.now();
+          function cleanup() {
+            if (stopped) return;
+            stopped = true;
+            cancelAnimationFrame(raf);
+            session.release();
+            stream.getTracks().forEach(function (track) { track.stop(); });
+          }
+          return new Promise(function (resolve, reject) {
             function draw(now) {
               var elapsed = Math.max(0, ((Number(now) || performance.now()) - startedAt) / 1000);
-              drawMotionFrame(ctx, backgroundImage, motionScene, elapsed);
+              session.draw(elapsed);
               raf = requestAnimationFrame(draw);
             }
             recorder.ondataavailable = function (event) {
@@ -998,7 +1040,6 @@
               if (!blob.size) reject(exportError('viewer.export.error.emptyWebm'));
               else resolve(blob);
             };
-            drawMotionFrame(ctx, backgroundImage, motionScene, 0);
             recorder.start(250);
             startedAt = performance.now();
             raf = requestAnimationFrame(draw);
@@ -1012,13 +1053,200 @@
               setTimeout(function () {
                 if (recorder.state !== 'inactive') recorder.stop();
               }, 120);
-            }, duration);
-          };
-          backgroundImage.onerror = function () {
-            URL.revokeObjectURL(sourceUrl);
-            reject(exportError('viewer.export.error.webmBackground'));
-          };
-          backgroundImage.src = sourceUrl;
+            }, session.duration);
+          });
+        });
+      }
+
+      // ---- GIF89a encoder -------------------------------------------------
+      // Tiny, dependency-free GIF writer for the same per-frame motion scenes
+      // above. GIF tags are device-independent and play in every browser
+      // (including Safari, which cannot write WebM), so this is the portable
+      // sibling of the MediaRecorder path. Colors are reduced to a 256-entry
+      // global palette with a 6-7-6 uniform quantizer, then LZW-compressed.
+      var GIF_PALETTE = [];
+      (function () {
+        for (var r = 0; r < 6; r++) {
+          for (var g = 0; g < 7; g++) {
+            for (var b = 0; b < 6; b++) {
+              GIF_PALETTE.push(51 * r, 36 * g, 51 * b);
+            }
+          }
+        }
+        // Extend 6*7*6 (=252) entries to a full 256-entry table.
+        while (GIF_PALETTE.length < 256 * 3) GIF_PALETTE.push(0, 0, 0);
+      })();
+
+      function quantizePixel(r, g, b) {
+        var ri = Math.min(5, (r * 6 / 256) | 0);
+        var gi = Math.min(6, (g * 7 / 256) | 0);
+        var bi = Math.min(5, (b * 6 / 256) | 0);
+        return (ri * 7 + gi) * 6 + bi;
+      }
+
+      function recordGif(options) {
+        options = options || {};
+        if (!motionTraceAvailable() || typeof document.createElement('canvas').getContext !== 'function') {
+          return Promise.reject(exportError('viewer.export.error.gifRequirements'));
+        }
+        var fps = Math.max(1, Number(options.fps) || 15);
+        return prepareMotionSession(options).then(function (session) {
+          var ctx = session.ctx;
+          var w = ctx.canvas.width;
+          var h = ctx.canvas.height;
+          var totalFrames = Math.max(1, Math.round(session.duration / 1000 * fps));
+          var delayCs = Math.max(1, Math.round(100 / fps));
+          return { session: session, ctx: ctx, w: w, h: h, totalFrames: totalFrames, delayCs: delayCs };
+        }).then(function (plan) {
+          var bytes = new Uint8Array(40 + plan.w * plan.h * (plan.totalFrames + 6));
+          var offset = 0;
+          function push8(v) { bytes[offset++] = v & 0xFF; }
+          function push16(v) { bytes[offset++] = v & 0xFF; bytes[offset++] = (v >> 8) & 0xFF; }
+          function push(p, n) { for (var i = 0; i < n; i++) bytes[offset++] = p[i]; }
+
+          // Logical screen descriptor.
+          push8(0x47); push8(0x49); push8(0x46); push8(0x38); push8(0x39); push8(0x61); // GIF89a
+          push16(plan.w); push16(plan.h);          // screen width/height
+          push8(0xF7);                             // global color table: 8-bit, 256 entries (size field 7 => 2^8=256)
+          push8(0);                                // background color index
+          push8(0);                                // pixel aspect ratio
+
+          // Global color table (256 entries). Palette entries are stored in
+          // 6-7-6 quantized order, so each quantized color is its own index.
+          for (var pi = 0; pi < 256; pi++) {
+            push8(GIF_PALETTE[pi * 3]);
+            push8(GIF_PALETTE[pi * 3 + 1]);
+            push8(GIF_PALETTE[pi * 3 + 2]);
+          }
+
+          var lzwMin = 8;
+
+          for (var f = 0; f < plan.totalFrames; f++) {
+            // Graphic control extension: disposal 1 (do not dispose), no
+            // transparency.
+            push8(0x21); push8(0xF9); push8(4);
+            push8(0x04);                            // packed: reserved, disposal=1, no transparency
+            push16(plan.delayCs);                   // centiseconds between frames
+            push8(0);                               // transparent color index (unused)
+            push8(0);                               // block terminator
+
+            // Image descriptor.
+            push8(0x2C);
+            push16(0); push16(0);                   // left, top
+            push16(plan.w); push16(plan.h);         // width, height
+            push8(0);                               // no local color table
+
+            // Draw this frame and index its pixels against the global table.
+            plan.session.draw(f / fps);
+            var img = plan.ctx.getImageData(0, 0, plan.w, plan.h).data;
+            var indices = new Uint8Array(plan.w * plan.h);
+            var idx = 0;
+            for (var i = 0; i < img.length; i += 4) {
+              indices[idx++] = quantizePixel(img[i], img[i + 1], img[i + 2]);
+            }
+
+            // GIF LZW compression. Port of gifenc's proven lzwEncode
+            // (MIT, Kevin Weiner / Thibault Imbert / Johan Nordberg / Matt
+            // DesLauriers / Mathieu Henri / Mattias Johansson), which is itself
+            // a port of the classic GIFCOMPR.C routines. Uses open-addressing
+            // double hashing over a {code,nextCode} table and emits 254-byte
+            // packets (the legal GIF sub-block maximum) terminated by a 0x00.
+            var initCodeSize = Math.max(2, lzwMin);
+            var BITS = 12;
+            var MASKS = [0,1,3,7,15,31,63,127,255,511,1023,2047,4095,8191,16383,32767,65535];
+            var initBits = initCodeSize + 1;
+            var nBits = initBits;
+            var maxcode = (1 << nBits) - 1;
+            var clearCode = 1 << (initBits - 1);
+            var eoiCode = clearCode + 1;
+            var freeEnt = clearCode + 2;
+            var clearFlg = false;
+            var hsize = 5003;
+            var htab = new Int32Array(hsize);
+            var codetab = new Int32Array(hsize);
+            htab.fill(-1);
+            var hshift = 0;
+            var fcodeTmp;
+            for (fcodeTmp = hsize; fcodeTmp < 65536; fcodeTmp *= 2) ++hshift;
+            hshift = 8 - hshift;
+            push8(initCodeSize);
+            var curAccum = 0, curBits = 0, aCount = 0;
+            var accum = new Uint8Array(256);
+            var ent;
+            var c;
+            var fcode = 0;
+            var i = 0;
+            function gifOutput(code) {
+              curAccum &= MASKS[curBits];
+              if (curBits > 0) curAccum |= code << curBits;
+              else curAccum = code;
+              curBits += nBits;
+              while (curBits >= 8) {
+                accum[aCount++] = curAccum & 0xff;
+                if (aCount >= 254) {
+                  push8(aCount);
+                  push(accum, aCount);
+                  aCount = 0;
+                }
+                curAccum >>= 8;
+                curBits -= 8;
+              }
+              if (freeEnt > maxcode || clearFlg) {
+                if (clearFlg) {
+                  nBits = initBits;
+                  maxcode = (1 << nBits) - 1;
+                  clearFlg = false;
+                } else {
+                  ++nBits;
+                  maxcode = nBits === BITS ? (1 << nBits) : (1 << nBits) - 1;
+                }
+              }
+              if (code === eoiCode) {
+                while (curBits > 0) {
+                  accum[aCount++] = curAccum & 0xff;
+                  if (aCount >= 254) { push8(aCount); push(accum, aCount); aCount = 0; }
+                  curAccum >>= 8;
+                  curBits -= 8;
+                }
+                if (aCount > 0) { push8(aCount); push(accum, aCount); aCount = 0; }
+              }
+            }
+            gifOutput(clearCode);
+            ent = indices[0];
+            for (var i2 = 1; i2 < indices.length; i2++) {
+              c = indices[i2];
+              fcode = (c << 8) | ent;
+              i = (c << hshift) ^ ent;
+              if (htab[i] === fcode) { ent = codetab[i]; continue; }
+              if (htab[i] >= 0) {
+                var disp = hsize - i;
+                if (i === 0) disp = 1;
+                do {
+                  i -= disp;
+                  if (i < 0) i += hsize;
+                  if (htab[i] === fcode) { ent = codetab[i]; break; }
+                } while (htab[i] >= 0);
+              }
+              gifOutput(ent);
+              ent = c;
+              if (freeEnt < 4096) {
+                codetab[i] = freeEnt++;
+                htab[i] = fcode;
+              } else {
+                for (var j = 0; j < hsize; j++) htab[j] = -1;
+                freeEnt = clearCode + 2;
+                clearFlg = true;
+              }
+            }
+            gifOutput(ent);
+            gifOutput(eoiCode);
+            push8(0); // LZW block terminator
+          }
+
+          push8(0x3B); // GIF trailer
+
+          plan.session.release();
+          return new Blob([bytes.subarray(0, offset)], { type: 'image/gif' });
         });
       }
 
@@ -1061,6 +1289,7 @@
       function supports(format) {
         if (format === 'svg' || format === 'svg-light' || format === 'svg-dark' || format === 'png') return true;
         if (format === 'webm') return canRecordMotion();
+        if (format === 'gif') return motionTraceAvailable();
         var mime = format === 'jpeg' ? 'image/jpeg' : 'image/webp';
         try {
           var c = document.createElement('canvas');
@@ -1174,7 +1403,7 @@
           format === 'svg-dark' ? 'dark' : null;
         close(true);
         clearExportReceipt();
-        if (format === 'webm') toast(viewerText('viewer.export.recording'));
+        if (format === 'webm' || format === 'gif') toast(viewerText('viewer.export.recording'));
         return (svgTheme
           ? Promise.resolve(serializeSvg(1, { theme: svgTheme })).then(function (d) {
               var blob = new Blob([d.svgString], { type: 'image/svg+xml;charset=utf-8' });
@@ -1187,6 +1416,13 @@
                 recordExportReceipt('webm', blob, true);
                 download(blob, base + '.webm');
                 toast(viewerText('viewer.export.downloadedWebm'));
+              })
+          : format === 'gif'
+            ? recordGif().then(function (blob) {
+                document.documentElement.setAttribute('data-last-motion-bytes', String(blob.size));
+                recordExportReceipt('gif', blob, true);
+                download(blob, base + '.gif');
+                toast(viewerText('viewer.export.downloadedGif'));
               })
           : rasterize(format).then(function (blob) {
               recordExportReceipt(format, blob, true);
@@ -1206,6 +1442,16 @@
               motionItem.style.opacity = '0.5';
             }
             toast(viewerText('viewer.export.webmUnavailable'));
+            return;
+          }
+          if (format === 'gif') {
+            var gifItem = menu.querySelector('button[data-format="gif"]');
+            if (gifItem) {
+              gifItem.disabled = true;
+              gifItem.title = viewerText('viewer.export.unsupported');
+              gifItem.style.opacity = '0.5';
+            }
+            toast(viewerText('viewer.export.gifUnavailable'));
             return;
           }
           alert(viewerText('viewer.export.failed', { message: message }));
@@ -1347,7 +1593,7 @@
         if (formatBtn && !formatBtn.disabled) { runExport(formatBtn.dataset.format); }
       });
 
-      Archify.motion = { canRecord: canRecordMotion, recordWebm: recordWebm };
+      Archify.motion = { canRecord: canRecordMotion, recordWebm: recordWebm, recordGif: recordGif };
       Archify.exportMenu = {
         open: open,
         close: close,

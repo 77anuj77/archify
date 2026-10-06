@@ -6700,43 +6700,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           ctx.closePath();
         }
 
-        var motionScene = createMotionScene(svg);
-
-        return new Promise(function (resolve, reject) {
-          var backgroundImage = new Image();
-          backgroundImage.onload = function () {
-            var canvas = document.createElement('canvas');
-            canvas.width = Math.max(2, Math.round(data.width / 2) * 2);
-            canvas.height = Math.max(2, Math.round(data.height / 2) * 2);
-            var ctx = canvas.getContext('2d');
-            if (!ctx) {
-              URL.revokeObjectURL(sourceUrl);
-              reject(exportError('viewer.export.error.contextUnavailable'));
-              return;
-            }
-            function draw(elapsed) {
-              drawMotionFrame(ctx, backgroundImage, motionScene, elapsed);
-            }
-            function release() {
-              URL.revokeObjectURL(sourceUrl);
-            }
-            drawMotionFrame(ctx, backgroundImage, motionScene, 0);
-            resolve({
-              canvas: canvas,
-              ctx: ctx,
-              duration: duration,
-              motionScene: motionScene,
-              draw: draw,
-              release: release
-            });
-          };
-          backgroundImage.onerror = function () {
-            URL.revokeObjectURL(sourceUrl);
-            reject(exportError('viewer.export.error.webmBackground'));
-          };
-          backgroundImage.src = sourceUrl;
-        });
-
         function drawMotionFrame(ctx, backgroundImage, motionScene, elapsed) {
           ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
           ctx.drawImage(backgroundImage, 0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -6796,6 +6759,43 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
           ctx.restore();
         }
+
+        var motionScene = createMotionScene(svg);
+
+        return new Promise(function (resolve, reject) {
+          var backgroundImage = new Image();
+          backgroundImage.onload = function () {
+            var canvas = document.createElement('canvas');
+            canvas.width = Math.max(2, Math.round(data.width / 2) * 2);
+            canvas.height = Math.max(2, Math.round(data.height / 2) * 2);
+            var ctx = canvas.getContext('2d');
+            if (!ctx) {
+              URL.revokeObjectURL(sourceUrl);
+              reject(exportError('viewer.export.error.contextUnavailable'));
+              return;
+            }
+            function draw(elapsed) {
+              drawMotionFrame(ctx, backgroundImage, motionScene, elapsed);
+            }
+            function release() {
+              URL.revokeObjectURL(sourceUrl);
+            }
+            drawMotionFrame(ctx, backgroundImage, motionScene, 0);
+            resolve({
+              canvas: canvas,
+              ctx: ctx,
+              duration: duration,
+              motionScene: motionScene,
+              draw: draw,
+              release: release
+            });
+          };
+          backgroundImage.onerror = function () {
+            URL.revokeObjectURL(sourceUrl);
+            reject(exportError('viewer.export.error.webmBackground'));
+          };
+          backgroundImage.src = sourceUrl;
+        });
       }
 
       function recordWebm(options) {
@@ -6926,7 +6926,6 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           }
 
           var lzwMin = 8;
-          var clearCode = 256, eoiCode = 257;
 
           for (var f = 0; f < plan.totalFrames; f++) {
             // Graphic control extension: disposal 1 (do not dispose), no
@@ -6980,6 +6979,9 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             var curAccum = 0, curBits = 0, aCount = 0;
             var accum = new Uint8Array(256);
             var ent;
+            var c;
+            var fcode = 0;
+            var i = 0;
             function gifOutput(code) {
               curAccum &= MASKS[curBits];
               if (curBits > 0) curAccum |= code << curBits;
@@ -7017,28 +7019,29 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
             }
             gifOutput(clearCode);
             ent = indices[0];
-            for (var g = 1; g < indices.length; g++) {
-              var c = indices[g];
-              var fcode = (c << BITS) + ent;
-              var hi = (c << hshift) ^ ent;
-              if (htab[hi] === fcode) { ent = codetab[hi]; continue; }
-              var disp = hi === 0 ? 1 : hsize - hi;
-              while (htab[hi] >= 0) {
-                hi -= disp;
-                if (hi < 0) hi += hsize;
-                if (htab[hi] === fcode) { ent = codetab[hi]; break; }
+            for (var i2 = 1; i2 < indices.length; i2++) {
+              c = indices[i2];
+              fcode = (c << 8) | ent;
+              i = (c << hshift) ^ ent;
+              if (htab[i] === fcode) { ent = codetab[i]; continue; }
+              if (htab[i] >= 0) {
+                var disp = hsize - i;
+                if (i === 0) disp = 1;
+                do {
+                  i -= disp;
+                  if (i < 0) i += hsize;
+                  if (htab[i] === fcode) { ent = codetab[i]; break; }
+                } while (htab[i] >= 0);
               }
-              if (htab[hi] === fcode) continue;
               gifOutput(ent);
               ent = c;
-              if (freeEnt < (1 << BITS)) {
-                codetab[hi] = freeEnt++;
-                htab[hi] = fcode;
+              if (freeEnt < 4096) {
+                codetab[i] = freeEnt++;
+                htab[i] = fcode;
               } else {
-                htab.fill(-1);
+                for (var j = 0; j < hsize; j++) htab[j] = -1;
                 freeEnt = clearCode + 2;
                 clearFlg = true;
-                gifOutput(clearCode);
               }
             }
             gifOutput(ent);
@@ -7206,7 +7209,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           format === 'svg-dark' ? 'dark' : null;
         close(true);
         clearExportReceipt();
-if (format === 'webm' || format === 'gif') toast(viewerText('viewer.export.recording'));
+        if (format === 'webm' || format === 'gif') toast(viewerText('viewer.export.recording'));
         return (svgTheme
           ? Promise.resolve(serializeSvg(1, { theme: svgTheme })).then(function (d) {
               var blob = new Blob([d.svgString], { type: 'image/svg+xml;charset=utf-8' });
